@@ -1,5 +1,43 @@
 [
   {
+    "id": "herbal-paper-plane",
+    "name": "Herbal Paper Plane",
+    "base": [
+      "bourbon"
+    ],
+    "profile": [
+      "herbal",
+      "citrusy"
+    ],
+    "sweetness": "balanced",
+    "ingredients": [
+      [
+        "0.75 oz",
+        "Bourbon"
+      ],
+      [
+        "0.75 oz",
+        "Aperol"
+      ],
+      [
+        "0.75 oz",
+        "Amaro Montenegro"
+      ],
+      [
+        "0.75 oz",
+        "Lemon juice"
+      ]
+    ],
+    "method": "Shake with ice, strain into coupe.",
+    "glass": "Coupe",
+    "garnish": "Mint leaf or lemon twist",
+    "tags": [
+      "shaken",
+      "amaro",
+      "riff"
+    ]
+  },
+  {
     "id": "paper-plane",
     "name": "Paper Plane",
     "base": [
