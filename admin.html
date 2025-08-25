@@ -30,6 +30,23 @@
       <p class="text-xs text-gray-500 mt-2">Real security is enforced by the serverless API.</p>
     </section>
 
+    <section class="card p-4 mt-4">
+  <h2 class="font-bold">Paste recipe object(s)</h2>
+  <p class="text-sm text-gray-600">
+    Paste a single recipe object <em>or</em> an array of objects using the same format as your <code>catalog.js</code>
+    (single quotes, trailing commas, unquoted keys are okay). Example: <code>{ name: 'Old Fashioned', ... }</code> or <code>[{...},{...}]</code>.
+  </p>
+  <textarea id="rawObj" rows="10" class="mt-2 w-full border rounded-lg p-2" placeholder="{ name: 'Old Fashioned', id: 'old-fashioned', base: ['bourbon','rye'], ... }"></textarea>
+  <div class="mt-2 flex items-center gap-2">
+    <button id="submitRawBtn" class="btn btn-primary">Save Pasted Object(s)</button>
+    <span id="statusRaw" class="text-sm text-gray-600"></span>
+  </div>
+  <p class="text-xs text-gray-500 mt-2">
+    Tip: you can paste multiple recipes as an array. We’ll upsert each one by <code>id</code> (or slug of <code>name</code>).
+  </p>
+</section>
+
+
     <section id="config" class="card p-4 mt-4 hidden">
       <h2 class="font-bold">API URL</h2>
       <p class="text-sm text-gray-600">Your Vercel URL (e.g., <code>https://your-app.vercel.app/api/save-recipe</code>).</p>
@@ -175,6 +192,53 @@ function parseIngredients(text){
     return i>0 ? [line.slice(0,i), line.slice(i+1)] : ['', line];
   });
 }
+<script>
+// --- Existing code above ---
+
+// Save raw object(s) handler
+document.getElementById('submitRawBtn').addEventListener('click', async () => {
+  const apiUrl = localStorage.getItem('catalogApiUrl') || document.getElementById('apiUrl').value.trim();
+  if (!apiUrl) return alert('Set your API URL first.');
+  const password = document.getElementById('pw').value.trim();
+  const raw = document.getElementById('rawObj').value.trim();
+  if (!raw) return alert('Paste a recipe object or an array of objects.');
+
+  // NOTE: This parser allows JS-like object syntax (single quotes, trailing commas, unquoted keys).
+  // It runs ONLY in your admin browser. Paste content you trust.
+  let parsed;
+  try {
+    // Wrap in parentheses so object literals parse correctly
+    parsed = (new Function('return (' + raw + ')'))();
+  } catch (e) {
+    console.error('Parse error', e);
+    document.getElementById('statusRaw').textContent = 'Parse error — check your object syntax.';
+    return;
+  }
+
+  // Normalize to array
+  const items = Array.isArray(parsed) ? parsed : [parsed];
+
+  // Build payload for bulk save
+  const payload = { password, recipes: items };
+
+  document.getElementById('statusRaw').textContent = 'Saving…';
+  try {
+    const r = await fetch(apiUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'save-failed');
+    document.getElementById('statusRaw').textContent = `Saved ✔ (${j.count || items.length} recipe${(j.count||items.length)===1?'':'s'})`;
+    setTimeout(()=> document.getElementById('statusRaw').textContent = '', 1800);
+  } catch (e) {
+    console.error(e);
+    document.getElementById('statusRaw').textContent = 'Error saving.';
+  }
+});
+</script>
+
 </script>
 </body>
 </html>
