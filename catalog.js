@@ -670,5 +670,142 @@
       garnish: 'Orange peel',
       tags: ['stirred']
     }
+    {
+  name: 'Nordic Boulevardier',
+  id: 'nordic-boulevardier',
+  base: ['bourbon', 'swedish punsch'],
+  profile: ['bittersweet', 'aromatic'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['1 oz', 'Bourbon'],
+    ['1 oz', 'Swedish Punsch'],
+    ['1 oz', 'Sweet Vermouth'],
+    ['2 dashes', 'Angostura Bitters']
+  ],
+  method: 'Stir with ice, strain into coupe or rocks glass.',
+  glass: 'Coupe or Rocks',
+  garnish: 'Orange twist',
+  tags: ['stirred', 'classic riff']
+},
+{
+  name: 'Arctic Gold Rush',
+  id: 'arctic-gold-rush',
+  base: ['bourbon', 'swedish punsch'],
+  profile: ['citrusy', 'warming'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['2 oz', 'Bourbon'],
+    ['0.75 oz', 'Swedish Punsch'],
+    ['0.75 oz', 'Lemon juice'],
+    ['0.25 oz', 'Honey syrup']
+  ],
+  method: 'Shake with ice, strain into rocks glass over fresh ice.',
+  glass: 'Rocks',
+  garnish: 'Lemon wheel',
+  tags: ['shaken', 'modern']
+},
+{
+  name: 'Punsch Painkiller',
+  id: 'punsch-painkiller',
+  base: ['rum', 'swedish punsch'],
+  profile: ['tropical', 'creamy'],
+  sweetness: 'sweet',
+  ingredients: [
+    ['1 oz', 'Aged Rum'],
+    ['1 oz', 'Swedish Punsch'],
+    ['1 oz', 'Pineapple juice'],
+    ['1 oz', 'Orange juice'],
+    ['1 oz', 'Coconut cream']
+  ],
+  method: 'Shake with ice, strain into tiki mug over crushed ice.',
+  glass: 'Tiki',
+  garnish: 'Grated nutmeg and pineapple wedge',
+  tags: ['tiki', 'tropical']
+},
+{
+  name: 'Swedish Daiquiri',
+  id: 'swedish-daiquiri',
+  base: ['rum', 'swedish punsch'],
+  profile: ['citrusy', 'bright'],
+  sweetness: 'dry',
+  ingredients: [
+    ['2 oz', 'White Rum'],
+    ['0.75 oz', 'Swedish Punsch'],
+    ['0.5 oz', 'Lime juice'],
+    ['0.25 oz', 'Simple syrup']
+  ],
+  method: 'Shake with ice and strain into chilled coupe.',
+  glass: 'Coupe',
+  garnish: 'Lime wheel',
+  tags: ['shaken', 'classic riff']
+},
+{
+  name: 'Stockholm Mule',
+  id: 'stockholm-mule',
+  base: ['vodka', 'swedish punsch'],
+  profile: ['spicy', 'refreshing'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['2 oz', 'Vodka'],
+    ['1 oz', 'Swedish Punsch'],
+    ['0.5 oz', 'Lime juice'],
+    ['4 oz', 'Ginger beer']
+  ],
+  method: 'Build in copper mug over ice, stir gently.',
+  glass: 'Copper Mug',
+  garnish: 'Lime wedge and mint sprig',
+  tags: ['long drink', 'mule']
+},
+{
+  name: 'Polar Martini',
+  id: 'polar-martini',
+  base: ['vodka', 'swedish punsch'],
+  profile: ['clean', 'aromatic'],
+  sweetness: 'dry',
+  ingredients: [
+    ['1.5 oz', 'Vodka'],
+    ['1 oz', 'Swedish Punsch'],
+    ['0.5 oz', 'Dry Vermouth'],
+    ['1 dash', 'Orange bitters']
+  ],
+  method: 'Stir with ice and strain into chilled martini glass.',
+  glass: 'Martini',
+  garnish: 'Lemon twist',
+  tags: ['stirred', 'spirit-forward']
+},
+{
+  name: 'Swedish Negroni',
+  id: 'swedish-negroni',
+  base: ['gin', 'swedish punsch'],
+  profile: ['bitter', 'herbal'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['1 oz', 'Gin'],
+    ['1 oz', 'Swedish Punsch'],
+    ['1 oz', 'Dry Vermouth']
+  ],
+  method: 'Stir with ice and strain into rocks glass over large cube.',
+  glass: 'Rocks',
+  garnish: 'Grapefruit twist',
+  tags: ['stirred', 'negroni riff']
+},
+{
+  name: 'Northern Lights',
+  id: 'northern-lights',
+  base: ['gin', 'swedish punsch'],
+  profile: ['citrusy', 'herbal'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['1.5 oz', 'Gin'],
+    ['1 oz', 'Swedish Punsch'],
+    ['0.75 oz', 'Lemon juice'],
+    ['0.25 oz', 'Simple syrup'],
+    ['2 dashes', 'Celery bitters']
+  ],
+  method: 'Shake with ice and strain into chilled coupe.',
+  glass: 'Coupe',
+  garnish: 'Cucumber slice or lemon wheel',
+  tags: ['shaken', 'bright']
+}
   ];
 })();
