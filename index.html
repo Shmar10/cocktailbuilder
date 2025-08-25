@@ -4,63 +4,41 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cocktail Recipe Generator</title>
-  <meta name="description" content="Pick your base spirit(s) + a couple preferences and get a cocktail recipe. Save favorites and regenerate with the same criteria." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%237946ff' d='M10 10h80v10L55 55v20a5 5 0 0 1-10 0V55L10 20z'/%3E%3Ccircle cx='50' cy='85' r='6' fill='%23999'/%3E%3C/svg%3E" />
-  <!-- Tailwind Play CDN for simple GitHub Pages hosting (no build step) -->
+  <meta name="description" content="Pick your base spirit(s) + preferences and get a cocktail recipe." />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Minimal CSS helpers (avoids Tailwind @apply which requires a build step) */
-    .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:1rem; padding:.5rem 1rem; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.08); transition:transform .05s ease; }
-    .btn:active { transform:scale(.97); }
-    .btn-primary { background:#6d28d9; color:#fff; }
-    .btn-primary:hover { background:#5b21b6; }
-    .btn-ghost { background:#fff; color:#374151; border:1px solid #e5e7eb; }
-    .btn-ghost:hover { background:#f9fafb; }
-    .btn-danger { background:#e11d48; color:#fff; }
-    .btn-danger:hover { background:#be123c; }
-    .card { border:1px solid #e5e7eb; border-radius:1.5rem; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.04); }
-    .section { border:1px solid #e5e7eb; border-radius:1rem; background:rgba(255,255,255,.6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+    .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:1rem; padding:.5rem 1rem; font-weight:600; border:1px solid #e5e7eb; background:#fff; }
+    .btn-primary { background:#6d28d9; color:#fff; border-color:#6d28d9; }
+    .btn-primary:hover { filter:brightness(.95); }
+    .card { border:1px solid #e5e7eb; border-radius:1rem; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.04); }
     .input, .select { width:100%; border:1px solid #e5e7eb; border-radius:.75rem; padding:.5rem .75rem; background:#fff; }
-    .chip { display:inline-flex; align-items:center; border-radius:9999px; background:#f3f4f6; padding:.25rem .625rem; font-size:.75rem; font-weight:600; margin-right:.5rem; margin-bottom:.5rem; }
     .tag { display:inline-flex; align-items:center; border:1px solid #d1d5db; border-radius:9999px; padding:.125rem .5rem; font-size:.75rem; font-weight:600; margin-right:.25rem; margin-bottom:.25rem; background:#fff; color:#374151; }
-    .kbd { display:inline-flex; align-items:center; border:1px solid #e5e7eb; border-radius:.375rem; padding:.125rem .375rem; font-size:.75rem; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background:#f9fafb; }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-violet-50 text-slate-800">
-  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b">
-    <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-500 grid place-items-center text-white font-black">🍸</div>
-        <div>
-          <h1 class="text-xl font-extrabold tracking-tight">Cocktail Recipe Generator</h1>
-          <p class="text-xs text-gray-500">Pick a base spirit (or two), set vibes, get a drink.</p>
-        </div>
-      </div>
+  <header class="sticky top-0 bg-white/80 backdrop-blur border-b">
+    <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+      <h1 class="text-xl font-extrabold tracking-tight">🍸 Cocktail Recipe Generator</h1>
       <nav class="flex items-center gap-2 text-sm">
-        <button id="favoritesTabBtn" class="btn btn-ghost">★ Favorites</button>
-        <a class="btn btn-ghost" href="#how-it-works">How it works</a>
-        <a class="btn btn-ghost" href="https://github.com/new" target="_blank" rel="noopener">Deploy</a>
+        <a class="btn" href="admin.html">Admin</a>
+        <a class="btn" href="#how">How it works</a>
       </nav>
     </div>
   </header>
 
-  <main class="mx-auto max-w-6xl px-4 py-6 grid gap-6 lg:grid-cols-5">
+  <main class="mx-auto max-w-5xl px-4 py-6 grid gap-6 lg:grid-cols-5">
     <!-- Controls -->
-    <section class="section p-4 lg:col-span-2">
+    <section class="card p-4 lg:col-span-2">
       <h2 class="text-lg font-bold mb-3">Your criteria</h2>
       <div class="grid gap-4">
-        <!-- Base spirits -->
         <div>
           <label class="font-semibold">Base spirit (pick 1–2)</label>
           <div id="baseSpirits" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
             <!-- checkboxes injected by JS -->
           </div>
-          <p class="mt-1 text-xs text-gray-500">Tip: <span class="kbd">Shift</span>+Click selects quickly.</p>
         </div>
-
-        <!-- Style (vibe) -->
         <div>
-          <label for="style" class="font-semibold">Style</label>
+          <label class="font-semibold" for="style">Style</label>
           <select id="style" class="select mt-2">
             <option value="any">Any</option>
             <option value="spirit-forward">Spirit-forward</option>
@@ -72,10 +50,8 @@
             <option value="herbal">Herbal</option>
           </select>
         </div>
-
-        <!-- Sweetness -->
         <div>
-          <label for="sweetness" class="font-semibold">Sweetness</label>
+          <label class="font-semibold" for="sweetness">Sweetness</label>
           <select id="sweetness" class="select mt-2">
             <option value="any">Any</option>
             <option value="dry">Dry</option>
@@ -83,10 +59,8 @@
             <option value="sweet">Sweet</option>
           </select>
         </div>
-
-        <!-- Effort -->
         <div>
-          <label for="effort" class="font-semibold">Effort</label>
+          <label class="font-semibold" for="effort">Effort</label>
           <select id="effort" class="select mt-2">
             <option value="any">Any</option>
             <option value="quick">Quick (≤ 4 ingredients)</option>
@@ -94,12 +68,10 @@
             <option value="fancy">Fancy (7+)</option>
           </select>
         </div>
-
         <div class="flex flex-wrap gap-2 pt-1">
-          <button id="generateBtn" class="btn btn-primary">Generate recipe</button>
-          <button id="regenBtn" class="btn btn-ghost" disabled>↻ Regenerate</button>
-          <button id="aiBtn" class="btn btn-ghost hidden">✨ Generate (AI)</button>
-          <button id="resetBtn" class="btn btn-ghost">Reset</button>
+          <button id="generateBtn" class="btn btn-primary">Generate</button>
+          <button id="regenBtn" class="btn" disabled>↻ Regenerate</button>
+          <button id="resetBtn" class="btn">Reset</button>
         </div>
       </div>
     </section>
@@ -107,112 +79,96 @@
     <!-- Output -->
     <section class="lg:col-span-3 grid gap-4">
       <div id="result" class="card p-5 hidden"></div>
-      <div id="noResult" class="section p-5 hidden">
+      <div id="noResult" class="card p-5 hidden">
         <h3 class="font-bold">No exact matches.</h3>
-        <p class="text-sm text-gray-600 mt-1">Try loosening criteria, or consider these near-misses:</p>
-        <div id="nearMisses" class="mt-3 grid gap-3"></div>
+        <p class="text-sm text-gray-600 mt-1">Try loosening criteria. Here are near matches by base:</p>
+        <div id="nearWrap" class="mt-3 grid gap-3"></div>
       </div>
 
-      <section id="favoritesPanel" class="section p-4 hidden">
-        <div class="flex items-center justify-between">
-          <h3 class="font-bold">★ Your favorites</h3>
-          <div class="flex items-center gap-2">
-            <button id="exportFavsBtn" class="btn btn-ghost">Export JSON</button>
-            <label class="btn btn-ghost cursor-pointer">Import JSON
-              <input id="importFavsInput" type="file" accept="application/json" class="hidden" />
-            </label>
-          </div>
-        </div>
-        <div id="favoritesList" class="mt-3 grid sm:grid-cols-2 gap-3"></div>
-      </section>
-
-      <section id="how-it-works" class="section p-4">
+      <section id="how" class="card p-4">
         <h2 class="text-lg font-bold">How it works</h2>
         <ul class="list-disc pl-6 text-sm text-gray-700 mt-2 space-y-1">
-          <li>Pick up to two base spirits, plus a couple preferences. Hit <strong>Generate</strong>.</li>
-          <li>Don’t love it? Tap <strong>Regenerate</strong> to spin another that fits the same criteria.</li>
-          <li>Click <strong>★ Favorite</strong> to save a recipe to your device (local-only). Export/Import as JSON to share.</li>
-          <li>Share a link with your selections—your picks are embedded in the URL.</li>
-          <li><strong>Optional AI:</strong> If you configure an AI endpoint, you’ll see a <em>✨ Generate (AI)</em> button for on-the-fly recipes.</li>
-          <li>100% client-side (AI optional). Host on GitHub Pages by dropping this file in a repo as <code>index.html</code>.</li>
+          <li>Seed recipes live in <code>catalog.js</code>.</li>
+          <li>Admin adds/updates recipes from <code>admin.html</code>. They’re stored in <code>custom-recipes.json</code>.</li>
+          <li>On load, this page merges both and auto-updates the base spirit list (new bases included).</li>
         </ul>
       </section>
     </section>
   </main>
 
-  <footer class="mx-auto max-w-6xl px-4 py-8 text-center text-xs text-gray-500">
-    Built with 🍹 and vanilla JS. No tracking. Edit/extend recipes in <code>catalog.js</code>.
+  <footer class="mx-auto max-w-5xl px-4 py-8 text-center text-xs text-gray-500">
+    No tracking. Built with vanilla JS.
   </footer>
 
-<script src="catalog.js"></script>
-<script>
-/***********************
-*  DATA & UTILITIES     *
-***********************/
-const SPIRITS = [
-  'bourbon','rye','scotch','irish whiskey','rum','jamaican rum','overproof rum','tequila','mezcal','gin','vodka','brandy','cognac','pisco','calvados','aperol','campari','amaro','swedish punsch','coffee liqueur','triple sec','curaçao','chartreuse green','chartreuse yellow','vermouth sweet','vermouth dry','champagne','prosecco'
-].map(s => ({ id: s, label: titleCase(s) }));
+  <!-- Load the seed catalog -->
+  <script src="catalog.js"></script>
+  <script>
+/** ---------- Helpers & Config ---------- **/
+const EXCLUDE_MODIFIERS = new Set([
+  'aperol','campari','amaro','swedish punsch','coffee liqueur','triple sec','curaçao',
+  'chartreuse green','chartreuse yellow','vermouth sweet','vermouth dry','champagne','prosecco'
+]);
+const BASE_NORMALIZE = { 'jamaican rum': 'rum', 'overproof rum': 'rum', 'cognac': 'brandy' };
+const normBase = b => BASE_NORMALIZE[b] || b;
+const titleCase = s => s.replace(/\b\w/g, c => c.toUpperCase());
+const slugify = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+const randomOf = arr => arr[Math.floor(Math.random()*arr.length)];
+const tag = t => `<span class="tag">${t}</span>`;
 
-// Map sub-types back to their umbrella for base matching
-const BASE_NORMALIZE = {
-  'jamaican rum': 'rum',
-  'overproof rum': 'rum',
-  'cognac': 'brandy',
-};
+/** ---------- State ---------- **/
+const state = { bases:new Set(), style:'any', sweetness:'any', effort:'any', lastPool:[], lastPick:null };
 
-function normBase(b){ return BASE_NORMALIZE[b] || b; }
+/** ---------- Boot ---------- **/
+document.addEventListener('DOMContentLoaded', () => { boot().catch(console.error); });
 
-// Sweetness buckets
-function sweetnessFromCount(n){ if(n <= 4) return 'dry'; if(n <= 6) return 'balanced'; return 'sweet'; }
+async function boot(){
+  const seed = Array.isArray(window.RECIPES) ? window.RECIPES : [];
+  const custom = await fetchCustom();
+  window.ALL_RECIPES = [...seed, ...custom];
 
-function titleCase(s){ return s.replace(/\b\w/g, c => c.toUpperCase()); }
+  buildBaseCheckboxes(window.ALL_RECIPES);
+  hydrateFromUrl();
 
-function tagPill(text){
-  return `<span class="tag">${text}</span>`;
+  document.getElementById('style').addEventListener('change', e => { state.style = e.target.value; syncUrl(); });
+  document.getElementById('sweetness').addEventListener('change', e => { state.sweetness = e.target.value; syncUrl(); });
+  document.getElementById('effort').addEventListener('change', e => { state.effort = e.target.value; syncUrl(); });
+
+  document.getElementById('generateBtn').addEventListener('click', handleGenerate);
+  document.getElementById('regenBtn').addEventListener('click', handleRegenerate);
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
 }
 
-function randomOf(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-function slugify(s){
-  return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+async function fetchCustom(){
+  try {
+    const r = await fetch('custom-recipes.json', { cache:'no-store' });
+    if (!r.ok) return [];
+    const j = await r.json();
+    return Array.isArray(j) ? j : [];
+  } catch { return []; }
 }
 
-/***********************
-*  STATE               *
-***********************/
-const state = {
-  bases: new Set(),
-  style: 'any',
-  sweetness: 'any',
-  effort: 'any',
-  lastPool: [],
-  lastPick: null,
-};
-
-// ====== AI CONFIG ======
-// Set this to your deployed serverless endpoint URL to enable AI generation.
-// Example: const AI_ENDPOINT = 'https://your-domain.vercel.app/api/generate-cocktail';
-const AI_ENDPOINT = '';
-
-/***********************
-*  INITIALIZE UI        *
-***********************/
-const baseWrap = document.getElementById('baseSpirits');
-SPIRITS.filter(s => !['aperol','campari','amaro','chartreuse green','chartreuse yellow','vermouth sweet','vermouth dry','champagne','prosecco','triple sec','curaçao','coffee liqueur'].includes(s.id))
-  .forEach(({id,label}) => {
+/** ---------- UI ---------- **/
+function buildBaseCheckboxes(recipes){
+  const wrap = document.getElementById('baseSpirits');
+  wrap.innerHTML = '';
+  const bases = new Set();
+  recipes.forEach(r => (r.base||[]).forEach(b => {
+    const nb = normBase(String(b).toLowerCase());
+    if (!EXCLUDE_MODIFIERS.has(nb)) bases.add(nb);
+  }));
+  Array.from(bases).sort().forEach(id => {
     const idAttr = `base-${id.replace(/\s+/g,'-')}`;
     const div = document.createElement('div');
     div.innerHTML = `
       <label class="flex items-center gap-2 border rounded-xl px-3 py-2 hover:bg-gray-50 cursor-pointer">
         <input type="checkbox" id="${idAttr}" value="${id}" class="accent-violet-600">
-        <span>${label}</span>
+        <span>${titleCase(id)}</span>
       </label>`;
-    baseWrap.appendChild(div);
+    wrap.appendChild(div);
     div.querySelector('input').addEventListener('change', (e) => {
       if (e.target.checked) {
         if (state.bases.size >= 2) {
-          // Keep at most two
-          const [first] = state.bases; // Set iteration order
+          const [first] = state.bases;
           document.getElementById(`base-${first.replace(/\s+/g,'-')}`).checked = false;
           state.bases.delete(first);
         }
@@ -223,135 +179,43 @@ SPIRITS.filter(s => !['aperol','campari','amaro','chartreuse green','chartreuse 
       syncUrl();
     });
   });
-
-['style','sweetness','effort'].forEach(id => {
-  document.getElementById(id).addEventListener('change', e => { state[id] = e.target.value; syncUrl(); });
-});
-
-// Buttons
-const generateBtn = document.getElementById('generateBtn');
-const regenBtn = document.getElementById('regenBtn');
-const resetBtn = document.getElementById('resetBtn');
-const aiBtn = document.getElementById('aiBtn');
-const favoritesTabBtn = document.getElementById('favoritesTabBtn');
-const favoritesPanel = document.getElementById('favoritesPanel');
-
-generateBtn.addEventListener('click', handleGenerate);
-regenBtn.addEventListener('click', handleRegenerate);
-resetBtn.addEventListener('click', resetAll);
-if (AI_ENDPOINT) {
-  aiBtn.classList.remove('hidden');
-  aiBtn.addEventListener('click', handleGenerateAI);
 }
-favoritesTabBtn.addEventListener('click', () => {
-  favoritesPanel.classList.toggle('hidden');
-  renderFavorites();
-});
 
-// URL params -> state (for shareable links)
-(function hydrateFromUrl(){
+/** ---------- URL sync ---------- **/
+function hydrateFromUrl(){
   const p = new URLSearchParams(location.search);
-  const bases = (p.get('bases')||'').split(',').filter(Boolean);
-  bases.slice(0,2).forEach(b => {
-    const idAttr = `base-${b.replace(/\s+/g,'-')}`;
-    const cb = document.getElementById(idAttr);
+  (p.get('bases')||'').split(',').filter(Boolean).slice(0,2).forEach(b => {
+    const cb = document.getElementById(`base-${b.replace(/\s+/g,'-')}`);
     if (cb){ cb.checked = true; state.bases.add(b); }
   });
-  ['style','sweetness','effort'].forEach(k => {
-    if (p.get(k)){
-      state[k] = p.get(k);
-      const el = document.getElementById(k); if (el) el.value = state[k];
-    }
-  });
-})();
-
+  ['style','sweetness','effort'].forEach(k => { if (p.get(k)){ state[k] = p.get(k); document.getElementById(k).value = state[k]; } });
+}
 function syncUrl(){
   const p = new URLSearchParams();
   if (state.bases.size) p.set('bases', Array.from(state.bases).join(','));
   ['style','sweetness','effort'].forEach(k => { if (state[k] !== 'any') p.set(k, state[k]); });
-  const newUrl = location.pathname + (p.toString()?`?${p.toString()}`:'');
-  history.replaceState(null, '', newUrl);
+  history.replaceState(null, '', location.pathname + (p.toString()?`?${p.toString()}`:''));
 }
 
-/***********************
-*  CORE LOGIC           *
-***********************/
-// ====== AI GENERATION ======
-async function handleGenerateAI(){
-  const body = {
-    bases: Array.from(state.bases),
-    style: state.style,
-    sweetness: state.sweetness,
-    effort: state.effort
-  };
-  try {
-    const res = await fetch(AI_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-    if (!res.ok) throw new Error('Bad response');
-    const data = await res.json();
-    const r = normalizeAiRecipe(data);
-    state.lastPool = [r];
-    state.lastPick = r;
-    const resultEl = document.getElementById('result');
-    resultEl.innerHTML = recipeCard(r);
-    resultEl.classList.remove('hidden');
-    document.getElementById('noResult').classList.add('hidden');
-    regenBtn.disabled = true;
-    attachRecipeCardHandlers(r);
-  } catch (e) {
-    console.error(e);
-    toast('AI generation failed. Check endpoint.');
-  }
-}
-
-function normalizeAiRecipe(d){
-  const safe = (v, def) => (v==null?def:v);
-  const toPairs = (arr) => Array.isArray(arr) ? arr.map(x => Array.isArray(x)?x:[x.amount||'', x.item||'']) : [];
-  return {
-    name: safe(d.name, 'Custom Cocktail'),
-    id: slugify(safe(d.name, 'custom-cocktail')),
-    base: (d.base||[]).map(b=>String(b).toLowerCase()),
-    profile: d.profile||[],
-    sweetness: d.sweetness||'balanced',
-    ingredients: toPairs(d.ingredients),
-    method: safe(d.method, 'Build over ice.'),
-    glass: safe(d.glass, 'Rocks'),
-    garnish: d.garnish||'',
-    tags: d.tags||['ai']
-  };
-}
-
+/** ---------- Filtering & Render ---------- **/
 function matchesCriteria(r){
-  // Base spirits
   const chosen = Array.from(state.bases);
   if (chosen.length){
-    const rbases = r.base.map(normBase);
-    const needAll = chosen.map(normBase).every(b => rbases.includes(b));
-    if (!needAll) return false;
+    const rbases = (r.base||[]).map(x => normBase(String(x).toLowerCase()));
+    if (!chosen.map(normBase).every(b => rbases.includes(b))) return false;
   }
-  // Style
   if (state.style !== 'any' && !(r.profile||[]).includes(state.style)) return false;
-  // Sweetness
   if (state.sweetness !== 'any' && r.sweetness !== state.sweetness) return false;
-  // Effort by ingredient count
-  const n = r.ingredients.length;
-  let bucket = 'standard';
-  if (n <= 4) bucket = 'quick';
-  else if (n >= 7) bucket = 'fancy';
+  const n = (r.ingredients||[]).length;
+  const bucket = n<=4?'quick':(n>=7?'fancy':'standard');
   if (state.effort !== 'any' && state.effort !== bucket) return false;
   return true;
 }
 
-function filterPool(){
-  const pool = (window.RECIPES || []).filter(matchesCriteria);
-  return pool;
-}
-
 function handleGenerate(){
-  const pool = filterPool();
-  state.lastPool = pool;
-  pickAndRender(pool);
+  state.lastPool = window.ALL_RECIPES.filter(matchesCriteria);
+  pickAndRender(state.lastPool);
 }
-
 function handleRegenerate(){
   if (!state.lastPool.length){ handleGenerate(); return; }
   pickAndRender(state.lastPool.filter(r => !state.lastPick || r.id !== state.lastPick.id));
@@ -360,219 +224,92 @@ function handleRegenerate(){
 function pickAndRender(pool){
   const resultEl = document.getElementById('result');
   const noResult = document.getElementById('noResult');
-  const nearWrap = document.getElementById('nearMisses');
+  const nearWrap = document.getElementById('nearWrap');
 
   if (!pool.length){
-    // Near misses: match only by base(s)
+    // near matches by base only
     const chosen = Array.from(state.bases);
-    const near = (window.RECIPES || []).filter(r => {
+    const near = window.ALL_RECIPES.filter(r => {
       if (!chosen.length) return false;
-      const rbases = r.base.map(normBase);
+      const rbases = (r.base||[]).map(x => normBase(String(x).toLowerCase()));
       return chosen.map(normBase).every(b => rbases.includes(b));
     }).slice(0,4);
-    nearWrap.innerHTML = near.map(r => smallCard(r)).join('') || '<p class="text-sm text-gray-500">No near matches either—try clearing a filter.</p>';
-    resultEl.classList.add('hidden');
-    noResult.classList.remove('hidden');
-    regenBtn.disabled = true;
+    nearWrap.innerHTML = near.map(r => `<div class="card p-3">
+      <div class="flex items-center justify-between">
+        <h4 class="font-semibold">${r.name}</h4>
+        <button data-open="${r.id}" class="text-violet-600 underline">Open</button>
+      </div>
+      <div class="mt-1 text-xs text-gray-600">${(r.profile||[]).map(tag).join('')}</div>
+    </div>`).join('') || '<p class="text-sm text-gray-500">No near matches either—clear a filter.</p>';
+    resultEl.classList.add('hidden'); noResult.classList.remove('hidden');
+    document.getElementById('regenBtn').disabled = true;
+    wrapOpenHandlers();
     return;
   }
 
-  const pick = randomOf(pool);
-  state.lastPick = pick;
+  const pick = randomOf(pool); state.lastPick = pick;
   resultEl.innerHTML = recipeCard(pick);
-  resultEl.classList.remove('hidden');
-  document.getElementById('noResult').classList.add('hidden');
-  regenBtn.disabled = pool.length <= 1;
-  attachRecipeCardHandlers(pick);
+  resultEl.classList.remove('hidden'); noResult.classList.add('hidden');
+  document.getElementById('regenBtn').disabled = pool.length <= 1;
+  wrapOpenHandlers();
 }
 
-function smallCard(r){
-  return `<div class="card p-3">
-    <div class="flex items-center justify-between">
-      <h4 class="font-semibold">${r.name}</h4>
-      <button data-open="${r.id}" class="text-violet-600 underline">Open</button>
-    </div>
-    <div class="mt-1 text-xs text-gray-600">${(r.profile||[]).map(tagPill).join('')}</div>
-  </div>`
+function wrapOpenHandlers(){
+  document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', e => {
+    const id = e.currentTarget.getAttribute('data-open');
+    const r = window.ALL_RECIPES.find(x => x.id === id);
+    if (r){ document.getElementById('result').innerHTML = recipeCard(r); document.getElementById('result').classList.remove('hidden'); document.getElementById('noResult').classList.add('hidden'); }
+  }));
 }
 
 function recipeCard(r){
-  const ingList = (r.ingredients||[]).map(([amt,item]) => `<li><span class="font-medium">${amt}</span> ${item}</li>`).join('');
-  const base = (r.base||[]).map(b => titleCase(normBase(b))).filter((v,i,a)=>a.indexOf(v)===i).join(' + ');
+  const ing = (r.ingredients||[]).map(([a,i]) => `<li><b>${a}</b> ${i}</li>`).join('');
+  const base = (r.base||[]).map(b => titleCase(normBase(String(b).toLowerCase()))).filter((v,i,a)=>a.indexOf(v)===i).join(' + ');
   const n = (r.ingredients||[]).length;
   const effort = n<=4?'quick':(n>=7?'fancy':'standard');
-  const fav = isFavorite(r.id);
   return `
-  <article>
-    <div class="flex items-start justify-between gap-4">
-      <div>
-        <h2 class="text-2xl font-extrabold">${r.name}</h2>
-        <p class="text-sm text-gray-600">${base} • ${titleCase((r.profile||[])[0]||'')} • ${titleCase(r.sweetness||'balanced')} • ${titleCase(effort)}</p>
+    <article>
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold">${r.name}</h2>
+          <p class="text-sm text-gray-600">${base} • ${titleCase((r.profile||[])[0]||'')} • ${titleCase(r.sweetness||'balanced')} • ${titleCase(effort)}</p>
+        </div>
+        <button class="btn" id="copyBtn">Copy</button>
       </div>
-      <div class="flex items-center gap-2">
-        <button class="btn btn-ghost" id="shareBtn">Share</button>
-        <button class="btn ${fav?'btn-danger':'btn-ghost'}" id="favBtn">${fav?'★ Remove':'☆ Favorite'}</button>
-        <button class="btn btn-primary" id="copyBtn">Copy</button>
+      <div class="grid sm:grid-cols-3 gap-4 mt-4">
+        <div class="sm:col-span-2 card p-4">
+          <h3 class="font-bold mb-2">Ingredients</h3>
+          <ul class="list-disc pl-6">${ing}</ul>
+        </div>
+        <div class="card p-4">
+          <h3 class="font-bold mb-2">Details</h3>
+          <p><b>Method:</b> ${r.method||''}</p>
+          <p><b>Glass:</b> ${r.glass||''}</p>
+          ${r.garnish?`<p><b>Garnish:</b> ${r.garnish}</p>`:''}
+          <div class="mt-2">${(r.tags||[]).map(tag).join('')}</div>
+        </div>
       </div>
-    </div>
-
-    <div class="grid sm:grid-cols-3 gap-4 mt-4">
-      <div class="sm:col-span-2 card p-4">
-        <h3 class="font-bold mb-2">Ingredients</h3>
-        <ul class="list-disc pl-6">${ingList}</ul>
-      </div>
-      <div class="card p-4">
-        <h3 class="font-bold mb-2">Details</h3>
-        <p><span class="font-semibold">Method:</span> ${r.method||''}</p>
-        <p><span class="font-semibold">Glass:</span> ${r.glass||''}</p>
-        ${r.garnish?`<p><span class="font-semibold">Garnish:</span> ${r.garnish}</p>`:''}
-        <div class="mt-2">${(r.tags||[]).map(t => `<span class="chip">${t}</span>`).join('')}</div>
-      </div>
-    </div>
-  </article>`;
+    </article>
+  `;
 }
 
-function attachRecipeCardHandlers(r){
-  const copyBtn = document.getElementById('copyBtn');
-  const favBtn = document.getElementById('favBtn');
-  const shareBtn = document.getElementById('shareBtn');
-
-  copyBtn?.addEventListener('click', () => {
-    const lines = [
-      `${r.name}`,
-      '',
-      'Ingredients:',
-      ...(r.ingredients||[]).map(([a,i]) => `• ${a} ${i}`),
-      '',
-      `Method: ${r.method||''}`,
-      `Glass: ${r.glass||''}`,
-      r.garnish?`Garnish: ${r.garnish}`:''
-    ].filter(Boolean).join('\n');
-    navigator.clipboard.writeText(lines).then(()=>{
-      toast('Recipe copied to clipboard');
-    });
-  });
-
-  favBtn?.addEventListener('click', () => {
-    toggleFavorite(r.id);
-    document.getElementById('result').innerHTML = recipeCard(r);
-    attachRecipeCardHandlers(r);
-    renderFavorites();
-  });
-
-  shareBtn?.addEventListener('click', () => {
-    const url = location.href.split('#')[0] + '#' + r.id;
-    navigator.clipboard.writeText(url).then(()=> toast('Shareable link copied'));
-  });
-}
-
-/***********************
-*  FAVORITES (local)    *
-***********************/
-const FAV_KEY = 'cocktail-favorites-v1';
-function getFavorites(){
-  try { return JSON.parse(localStorage.getItem(FAV_KEY)||'[]'); } catch { return []; }
-}
-function isFavorite(id){ return getFavorites().includes(id); }
-function toggleFavorite(id){
-  const favs = new Set(getFavorites());
-  if (favs.has(id)) favs.delete(id); else favs.add(id);
-  localStorage.setItem(FAV_KEY, JSON.stringify(Array.from(favs)));
-}
-function renderFavorites(){
-  const wrap = document.getElementById('favoritesList');
-  const favs = getFavorites();
-  if (!wrap) return;
-  const list = (window.RECIPES || []).filter(r => favs.includes(r.id));
-  wrap.innerHTML = list.length ? list.map(r => `
-    <div class="card p-3">
-      <div class="flex items-center justify-between">
-        <h4 class="font-semibold">${r.name}</h4>
-        <button class="text-rose-600 underline" data-remove="${r.id}">Remove</button>
-      </div>
-      <div class="mt-2 text-xs text-gray-600">${(r.base||[]).map(b=>titleCase(normBase(b))).join(' + ')} • ${(r.profile||[]).join(', ')}</div>
-      <div class="mt-2"><button class="btn btn-ghost" data-open="${r.id}">Open</button></div>
-    </div>`).join('') : '<p class="text-sm text-gray-500">No favorites yet. Mark recipes with ☆ Favorite.</p>';
-
-  wrap.querySelectorAll('[data-remove]').forEach(btn => btn.addEventListener('click', e => {
-    toggleFavorite(e.target.getAttribute('data-remove'));
-    renderFavorites();
-  }));
-  wrap.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', e => {
-    const id = e.target.getAttribute('data-open');
-    const r = (window.RECIPES || []).find(r => r.id === id);
-    if (r){
-      document.getElementById('result').innerHTML = recipeCard(r);
-      document.getElementById('result').classList.remove('hidden');
-      document.getElementById('noResult').classList.add('hidden');
-      attachRecipeCardHandlers(r);
-      state.lastPick = r;
-    }
-  }));
-}
-
-// Export/Import
-const exportFavsBtn = document.getElementById('exportFavsBtn');
-const importFavsInput = document.getElementById('importFavsInput');
-exportFavsBtn?.addEventListener('click', () => {
-  const data = JSON.stringify(getFavorites(), null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = Object.assign(document.createElement('a'), { href: url, download: 'favorites.json' });
-  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-});
-importFavsInput?.addEventListener('change', (e) => {
-  const f = e.target.files?.[0];
-  if (!f) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const arr = JSON.parse(reader.result);
-      if (Array.isArray(arr)){
-        localStorage.setItem(FAV_KEY, JSON.stringify(arr));
-        toast('Favorites imported');
-        renderFavorites();
-      } else throw new Error('Bad JSON');
-    } catch {
-      toast('Import failed: invalid JSON');
-    }
-  };
-  reader.readAsText(f);
-});
-
-/***********************
-*  MISC UI UTILITIES    *
-***********************/
+/** ---------- Reset ---------- **/
 function resetAll(){
   document.querySelectorAll('#baseSpirits input[type=checkbox]').forEach(cb => cb.checked = false);
-  state.bases.clear();
-  state.style='any'; state.sweetness='any'; state.effort='any';
-  document.getElementById('style').value='any';
-  document.getElementById('sweetness').value='any';
-  document.getElementById('effort').value='any';
-  document.getElementById('result').classList.add('hidden');
-  document.getElementById('noResult').classList.add('hidden');
-  regenBtn.disabled = true;
+  state.bases.clear(); state.style='any'; state.sweetness='any'; state.effort='any';
+  document.getElementById('style').value='any'; document.getElementById('sweetness').value='any'; document.getElementById('effort').value='any';
+  document.getElementById('result').classList.add('hidden'); document.getElementById('noResult').classList.add('hidden');
+  document.getElementById('regenBtn').disabled = true;
   syncUrl();
 }
 
-function toast(msg){
-  const t = document.createElement('div');
-  t.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-black text-white text-sm px-4 py-2 rounded-full shadow-lg';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 1800);
-}
-
-/***********************
-*  KEYBOARD A11Y        *
-***********************/
-window.addEventListener('keydown', (e) => {
-  if (e.key.toLowerCase() === 'r' && !e.metaKey && !e.ctrlKey){
-    e.preventDefault();
-    if (!regenBtn.disabled) handleRegenerate();
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'copyBtn') {
+    const el = document.createElement('textarea');
+    el.value = document.getElementById('result').innerText;
+    document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove();
   }
 });
-</script>
+  </script>
 </body>
 </html>
