@@ -8,8 +8,9 @@
   <style>
     .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:1rem; padding:.5rem 1rem; font-weight:600; border:1px solid #e5e7eb; background:#fff; }
     .btn-primary { background:#0ea5e9; color:#fff; border-color:#0ea5e9; }
-    .input, .select, textarea { width:100%; border:1px solid #e5e7eb; border-radius:.75rem; padding:.5rem .75rem; background:#fff; }
+    .input, textarea { width:100%; border:1px solid #e5e7eb; border-radius:.75rem; padding:.5rem .75rem; background:#fff; }
     .card { border:1px solid #e5e7eb; border-radius:1rem; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+    .muted { color:#64748b; }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 text-slate-800">
@@ -19,226 +20,177 @@
       <a href="./" class="btn">← Back</a>
     </header>
 
-    <!-- Client-side gate (real protection is on the API) -->
+    <!-- GATE: password only -->
     <section id="gate" class="card p-4 mt-4">
-      <h2 class="font-bold">Password</h2>
-      <p class="text-sm text-gray-600">Enter the admin password to edit recipes.</p>
+      <h2 class="font-bold">Enter Admin Password</h2>
+      <p class="text-sm muted">The API URL will be requested once after you unlock (and remembered on this browser).</p>
       <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-        <input id="pw" type="password" placeholder="Admin password" class="input" />
+        <input id="pw" type="password" placeholder="Admin password" class="input" autocomplete="current-password" />
         <button id="unlockBtn" class="btn btn-primary">Unlock</button>
       </div>
-      <p class="text-xs text-gray-500 mt-2">Real security is enforced by the serverless API.</p>
+      <p id="gateStatus" class="text-sm mt-2"></p>
     </section>
 
-    <section class="card p-4 mt-4">
-  <h2 class="font-bold">Paste recipe object(s)</h2>
-  <p class="text-sm text-gray-600">
-    Paste a single recipe object <em>or</em> an array of objects using the same format as your <code>catalog.js</code>
-    (single quotes, trailing commas, unquoted keys are okay). Example: <code>{ name: 'Old Fashioned', ... }</code> or <code>[{...},{...}]</code>.
-  </p>
-  <textarea id="rawObj" rows="10" class="mt-2 w-full border rounded-lg p-2" placeholder="{ name: 'Old Fashioned', id: 'old-fashioned', base: ['bourbon','rye'], ... }"></textarea>
-  <div class="mt-2 flex items-center gap-2">
-    <button id="submitRawBtn" class="btn btn-primary">Save Pasted Object(s)</button>
-    <span id="statusRaw" class="text-sm text-gray-600"></span>
-  </div>
-  <p class="text-xs text-gray-500 mt-2">
-    Tip: you can paste multiple recipes as an array. We’ll upsert each one by <code>id</code> (or slug of <code>name</code>).
-  </p>
-</section>
-
-
-    <section id="config" class="card p-4 mt-4 hidden">
-      <h2 class="font-bold">API URL</h2>
-      <p class="text-sm text-gray-600">Your Vercel URL (e.g., <code>https://your-app.vercel.app/api/save-recipe</code>).</p>
-      <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-        <input id="apiUrl" type="url" placeholder="https://<project>.vercel.app/api/save-recipe" class="input" />
-        <button id="saveApiUrl" class="btn">Save</button>
+    <!-- MAIN: hidden until password validated -->
+    <section id="main" class="hidden">
+      <div class="card p-4 mt-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="font-bold">Paste recipe object(s)</h2>
+            <p class="text-sm muted">Paste a single object or an array — exactly like your <code>catalog.js</code> format.</p>
+          </div>
+          <div class="text-right">
+            <button id="changeApiBtn" class="btn">Change API URL</button>
+            <div class="text-xs muted mt-1" id="apiUrlDisplay"></div>
+          </div>
+        </div>
+        <textarea id="rawObj" rows="12" class="mt-3 input" placeholder="{ name: 'Old Fashioned', id: 'old-fashioned', base: ['bourbon','rye'], ... }"></textarea>
+        <div class="mt-3 flex items-center gap-2">
+          <button id="submitRawBtn" class="btn btn-primary">Save Pasted Object(s)</button>
+          <span id="statusRaw" class="text-sm muted"></span>
+        </div>
+        <details class="mt-3">
+          <summary class="cursor-pointer text-sm font-semibold">Example (click to insert)</summary>
+          <pre id="exampleText" class="mt-2 text-sm bg-slate-50 p-3 rounded-lg overflow-auto">{ name: 'Kingston Sour', base: ['jamaican rum'], profile: ['citrusy'], sweetness: 'balanced', ingredients: [['2 oz','Jamaican rum'],['0.75 oz','Lime juice'],['0.5 oz','Simple syrup'],['1 dash','Angostura']], method: 'Shake with ice; fine strain into coupe.', glass: 'Coupe', garnish: 'Lime wheel', tags: ['modern','shaken'] }</pre>
+          <div class="mt-2"><button id="insertExample" class="btn">Insert example</button></div>
+        </details>
       </div>
-      <p class="text-xs text-gray-500 mt-2">Stored locally in this browser.</p>
-    </section>
-
-    <section id="formWrap" class="card p-4 mt-4 hidden">
-      <h2 class="font-bold">Add / Update a Recipe</h2>
-      <p class="text-sm text-gray-600">Fill the form OR paste free text. Using the same <b>Name</b> will update that recipe.</p>
-      <div class="grid gap-4">
-        <div>
-          <label class="font-semibold">Name</label>
-          <input id="name" class="input" placeholder="e.g., Kingston Sour" />
-        </div>
-        <div class="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label class="font-semibold">Base(s) (comma-separated)</label>
-            <input id="bases" class="input" placeholder="e.g., gin or rum, campari" />
-          </div>
-          <div>
-            <label class="font-semibold">Profile</label>
-            <select id="profile" class="select">
-              <option value="">(choose)</option>
-              <option>spirit-forward</option>
-              <option>citrusy</option>
-              <option>bubbly</option>
-              <option>tiki</option>
-              <option>bitter</option>
-              <option>dessert</option>
-              <option>herbal</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label class="font-semibold">Sweetness</label>
-            <select id="sweetness" class="select">
-              <option>dry</option>
-              <option selected>balanced</option>
-              <option>sweet</option>
-            </select>
-          </div>
-          <div>
-            <label class="font-semibold">Glass</label>
-            <input id="glass" class="input" placeholder="Coupe, Rocks, Highball…" />
-          </div>
-        </div>
-        <div>
-          <label class="font-semibold">Ingredients (one per line)</label>
-          <textarea id="ingredients" rows="6" placeholder="2 oz Gin
-0.75 oz Lime juice
-0.5 oz Simple syrup
-2 dashes Angostura bitters"></textarea>
-        </div>
-        <div>
-          <label class="font-semibold">Method</label>
-          <textarea id="method" rows="3" placeholder="Shake with ice, fine strain into coupe."></textarea>
-        </div>
-        <div class="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label class="font-semibold">Garnish (optional)</label>
-            <input id="garnish" class="input" placeholder="Lime wheel" />
-          </div>
-          <div>
-            <label class="font-semibold">Tags (comma-separated, optional)</label>
-            <input id="tags" class="input" placeholder="modern, shaken" />
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="submitBtn" class="btn btn-primary">Save Recipe</button>
-          <span id="status" class="text-sm text-gray-600"></span>
-        </div>
-      </div>
-    </section>
-
-    <section class="card p-4 mt-4">
-      <h2 class="font-bold">Tips</h2>
-      <ul class="list-disc pl-6 text-sm text-gray-700 space-y-1">
-        <li>To update a recipe, re-use the same <b>Name</b>.</li>
-        <li>Ingredients parser understands: <code>2 oz Gin</code>, <code>1 tsp Syrup</code>, <code>Top Soda water</code>, <code>Rinse Absinthe</code>, <code>2 dashes Angostura</code>.</li>
-        <li>All custom recipes live in <code>custom-recipes.json</code> (committed to your repo by the API).</li>
-      </ul>
     </section>
   </div>
 
 <script>
-const gate = document.getElementById('gate');
-const config = document.getElementById('config');
-const formWrap = document.getElementById('formWrap');
+document.addEventListener('DOMContentLoaded', () => {
+  const gate = document.getElementById('gate');
+  const main = document.getElementById('main');
+  const unlockBtn = document.getElementById('unlockBtn');
+  const pwInput = document.getElementById('pw');
+  const gateStatus = document.getElementById('gateStatus');
+  const apiUrlDisplay = document.getElementById('apiUrlDisplay');
+  const changeApiBtn = document.getElementById('changeApiBtn');
+  const rawTextarea = document.getElementById('rawObj');
+  const submitRawBtn = document.getElementById('submitRawBtn');
+  const insertExampleBtn = document.getElementById('insertExample');
+  const exampleText = document.getElementById('exampleText');
 
-document.getElementById('unlockBtn').addEventListener('click', () => {
-  if (document.getElementById('pw').value.trim()) {
-    gate.classList.add('hidden'); config.classList.remove('hidden'); formWrap.classList.remove('hidden');
+  // Helpers
+  const getApiUrl = () => localStorage.getItem('catalogApiUrl') || '';
+  const setApiUrl = (v) => { localStorage.setItem('catalogApiUrl', v); renderApiUrl(); };
+  const renderApiUrl = () => { apiUrlDisplay.textContent = getApiUrl() ? `API: ${getApiUrl()}` : 'API not set yet'; };
+
+  // Prompt for API if missing
+  function ensureApiUrl() {
+    let url = getApiUrl();
+    if (!url) {
+      url = prompt('Enter your Vercel API URL (e.g., https://<project>.vercel.app/api/save-recipe)') || '';
+      url = url.trim();
+      if (!url) return null;
+      setApiUrl(url);
+    }
+    return url;
   }
-});
-document.getElementById('saveApiUrl').addEventListener('click', () => {
-  localStorage.setItem('catalogApiUrl', document.getElementById('apiUrl').value.trim());
-  alert('Saved.');
-});
 
-document.getElementById('submitBtn').addEventListener('click', async () => {
-  const apiUrl = localStorage.getItem('catalogApiUrl') || document.getElementById('apiUrl').value.trim();
-  if (!apiUrl) return alert('Set your API URL first.');
-  const password = document.getElementById('pw').value.trim();
-  const name = document.getElementById('name').value.trim();
-  if (!name) return alert('Name is required.');
+  renderApiUrl();
 
-  const bases = document.getElementById('bases').value.split(',').map(s => s.trim()).filter(Boolean);
-  const profile = document.getElementById('profile').value ? [document.getElementById('profile').value] : [];
-  const sweetness = document.getElementById('sweetness').value;
-  const glass = document.getElementById('glass').value.trim();
-  const ingredientsText = document.getElementById('ingredients').value.trim();
-  const method = document.getElementById('method').value.trim();
-  const garnish = document.getElementById('garnish').value.trim();
-  const tags = document.getElementById('tags').value.split(',').map(s => s.trim()).filter(Boolean);
-
-  const ingredients = parseIngredients(ingredientsText);
-  const payload = { password, recipe: { name, base:bases, profile, sweetness, ingredients, method, glass, garnish, tags } };
-
-  document.getElementById('status').textContent = 'Saving…';
-  try {
-    const r = await fetch(apiUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.error || 'save-failed');
-    document.getElementById('status').textContent = 'Saved ✔';
-    setTimeout(()=> document.getElementById('status').textContent = '', 1500);
-  } catch (e) {
-    console.error(e);
-    document.getElementById('status').textContent = 'Error saving.';
-  }
-});
-
-function parseIngredients(text){
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  return lines.map(line => {
-    const m = line.match(/^(Top|Rinse|Float|Dash(?:es)?|Pinch|Barspoon|\d+[\/\d\s\.]*\s*(?:oz|tsp|tbsp|ml|dash(?:es)?|barspoon))\s+(.*)$/i);
-    if (m) return [m[1], m[2]];
-    const i = line.indexOf(' ');
-    return i>0 ? [line.slice(0,i), line.slice(i+1)] : ['', line];
+  changeApiBtn.addEventListener('click', () => {
+    const current = getApiUrl();
+    const next = prompt('Update API URL', current || 'https://<project>.vercel.app/api/save-recipe');
+    if (next !== null) setApiUrl((next || '').trim());
   });
-}
-<script>
-// --- Existing code above ---
 
-// Save raw object(s) handler
-document.getElementById('submitRawBtn').addEventListener('click', async () => {
-  const apiUrl = localStorage.getItem('catalogApiUrl') || document.getElementById('apiUrl').value.trim();
-  if (!apiUrl) return alert('Set your API URL first.');
-  const password = document.getElementById('pw').value.trim();
-  const raw = document.getElementById('rawObj').value.trim();
-  if (!raw) return alert('Paste a recipe object or an array of objects.');
+  // Unlock flow:
+  // 1) Ask for API URL if needed
+  // 2) POST {password, recipes:[]} (empty list) to validate password without writing
+  //    - 400 "no-recipes" => password OK -> unlock
+  //    - 401 "unauthorized" => wrong password
+  //    - other => show error
+  unlockBtn.addEventListener('click', async () => {
+    gateStatus.textContent = '';
+    const password = pwInput.value.trim();
+    if (!password) { gateStatus.textContent = 'Please enter a password.'; return; }
 
-  // NOTE: This parser allows JS-like object syntax (single quotes, trailing commas, unquoted keys).
-  // It runs ONLY in your admin browser. Paste content you trust.
-  let parsed;
-  try {
-    // Wrap in parentheses so object literals parse correctly
-    parsed = (new Function('return (' + raw + ')'))();
-  } catch (e) {
-    console.error('Parse error', e);
-    document.getElementById('statusRaw').textContent = 'Parse error — check your object syntax.';
-    return;
-  }
+    const apiUrl = ensureApiUrl();
+    if (!apiUrl) { gateStatus.textContent = 'API URL is required.'; return; }
 
-  // Normalize to array
-  const items = Array.isArray(parsed) ? parsed : [parsed];
+    gateStatus.textContent = 'Checking password…';
+    try {
+      const r = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, recipes: [] })
+      });
+      const j = await r.json().catch(() => ({}));
 
-  // Build payload for bulk save
-  const payload = { password, recipes: items };
+      if (r.status === 401) {
+        gateStatus.textContent = 'Incorrect password.';
+        return;
+      }
+      if (r.status === 400 && (j.error === 'no-recipes' || j.error === 'no-recipes-provided')) {
+        // success: password accepted
+        localStorage.setItem('catalogAdminPw', password);
+        gate.classList.add('hidden');
+        main.classList.remove('hidden');
+        return;
+      }
+      if (!r.ok) {
+        gateStatus.textContent = `API error: ${j.error || r.status}`;
+        return;
+      }
+      // Some APIs might return ok:true even with empty array; treat as success.
+      localStorage.setItem('catalogAdminPw', password);
+      gate.classList.add('hidden');
+      main.classList.remove('hidden');
+    } catch (e) {
+      console.error(e);
+      gateStatus.textContent = 'Network error — check your API URL.';
+    }
+  });
 
-  document.getElementById('statusRaw').textContent = 'Saving…';
-  try {
-    const r = await fetch(apiUrl, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.error || 'save-failed');
-    document.getElementById('statusRaw').textContent = `Saved ✔ (${j.count || items.length} recipe${(j.count||items.length)===1?'':'s'})`;
-    setTimeout(()=> document.getElementById('statusRaw').textContent = '', 1800);
-  } catch (e) {
-    console.error(e);
-    document.getElementById('statusRaw').textContent = 'Error saving.';
-  }
+  // Insert example text
+  insertExampleBtn.addEventListener('click', () => {
+    rawTextarea.value = exampleText.textContent.trim();
+  });
+
+  // Save raw object(s)
+  submitRawBtn.addEventListener('click', async () => {
+    const apiUrl = getApiUrl();
+    const password = localStorage.getItem('catalogAdminPw') || pwInput.value.trim();
+    if (!apiUrl) { alert('API URL missing — click “Change API URL” to set it.'); return; }
+    if (!password) { alert('Password missing — reload and unlock again.'); return; }
+
+    const raw = rawTextarea.value.trim();
+    if (!raw) { alert('Paste a recipe object or an array of objects.'); return; }
+
+    let parsed;
+    try {
+      // Allow JS-ish objects: single quotes, trailing commas, unquoted keys.
+      parsed = (new Function('return (' + raw + ')'))();
+    } catch (e) {
+      console.error('Parse error', e);
+      document.getElementById('statusRaw').textContent = 'Parse error — check your object syntax.';
+      return;
+    }
+
+    const items = Array.isArray(parsed) ? parsed : [parsed];
+    const payload = { password, recipes: items };
+
+    const statusEl = document.getElementById('statusRaw');
+    statusEl.textContent = 'Saving…';
+    try {
+      const r = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'save-failed');
+      statusEl.textContent = `Saved ✔ (${j.count || items.length} recipe${(j.count||items.length)===1?'':'s'})`;
+      setTimeout(() => statusEl.textContent = '', 2000);
+    } catch (e) {
+      console.error(e);
+      statusEl.textContent = 'Error saving — see console.';
+    }
+  });
 });
-</script>
-
 </script>
 </body>
 </html>
