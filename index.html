@@ -415,6 +415,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(a); a.click(); a.remove();
   });
 });
+  // ---------- Export merged catalog.js ----------
+document.getElementById('exportCatalogBtn')?.addEventListener('click', () => {
+  const merged = Array.isArray(window.ALL_RECIPES) ? window.ALL_RECIPES : [];
+  const js = `(function(){\n  window.RECIPES = ${JSON.stringify(merged, null, 2)};\n})();\n`;
+  const blob = new Blob([js], {type:'application/javascript'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'catalog.js';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+});
   </script>
 </body>
 </html>
