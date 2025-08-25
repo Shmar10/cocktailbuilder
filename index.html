@@ -108,8 +108,15 @@ const EXCLUDE_MODIFIERS = new Set([
   'aperol','campari','amaro','coffee liqueur','triple sec','curaçao',
   'chartreuse green','chartreuse yellow','vermouth sweet','vermouth dry','champagne','prosecco'
 ]);
-const BASE_NORMALIZE = { 'jamaican rum': 'rum', 'overproof rum': 'rum', 'cognac': 'brandy' };
-const normBase = b => BASE_NORMALIZE[b] || b;
+
+// Treat ANY rum/rhum variant as "rum"; roll "cognac" into "brandy".
+function normBase(b) {
+  const s = String(b).toLowerCase().trim();
+  if (s.includes('rhum agricole')) return 'rum'; // change to 'rhum agricole' if you want it separate
+  if (s.includes('rum') || s.includes('rhum')) return 'rum';
+  if (s === 'cognac') return 'brandy';
+  return s;
+}
 const titleCase = s => s.replace(/\b\w/g, c => c.toUpperCase());
 const slugify = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 const randomOf = arr => arr[Math.floor(Math.random()*arr.length)];
