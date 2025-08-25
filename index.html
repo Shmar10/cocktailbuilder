@@ -22,10 +22,6 @@
       <nav class="flex items-center gap-2 text-sm">
         <a class="btn" href="admin.html">Admin</a>
         <a class="btn" href="#how">How it works</a>
-        <section class="card p-4 mt-4">
-  <h2 class="text-lg font-bold mb-2">Maintenance</h2>
-  <button id="exportCatalogBtn" class="btn">Export merged catalog.js</button>
-</section>
       </nav>
     </div>
   </header>
@@ -42,9 +38,10 @@
         <button id="searchClear" class="btn">Clear</button>
         <button id="searchExport" class="btn">Export results</button>
       </div>
-     <p class="text-xs text-gray-500 mt-1">Searches name, ingredients, method, tags, and base. Click a result to open it.</p>
+      <p class="text-xs text-gray-500 mt-1">Searches name, ingredients, method, tags, and base. Click a result to open it.</p>
       <div id="searchResults" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
     </section>
+
     <!-- Controls -->
     <section class="card p-4 lg:col-span-2">
       <h2 class="text-lg font-bold mb-3">Your criteria</h2>
@@ -103,6 +100,7 @@
         <div id="nearWrap" class="mt-3 grid gap-3"></div>
       </div>
 
+      <!-- How it works -->
       <section id="how" class="card p-4">
         <h2 class="text-lg font-bold">How it works</h2>
         <ul class="list-disc pl-6 text-sm text-gray-700 mt-2 space-y-1">
@@ -111,6 +109,25 @@
           <li>On load, this page merges both and auto-updates the base spirit list (new bases included).</li>
         </ul>
       </section>
+
+      <!-- Maintenance -->
+      <section class="card p-4">
+        <h2 class="text-lg font-bold mb-2">Maintenance</h2>
+        <div class="flex flex-wrap gap-2">
+          <button id="exportCatalogBtn" class="btn">Export merged catalog.js</button>
+          <button id="refreshDataBtn" class="btn">Refresh data</button>
+          <span id="refreshStatus" class="text-sm text-gray-500"></span>
+        </div>
+      </section>
+    </section>
+
+    <!-- All matches for current criteria -->
+    <section id="matchesSection" class="card p-4 hidden lg:col-span-5">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold">Matches</h3>
+        <div id="matchesCount" class="text-sm text-gray-500"></div>
+      </div>
+      <div id="matchesGrid" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
     </section>
   </main>
 
@@ -135,8 +152,8 @@ function normBase(b) {
   if (s === 'cognac') return 'brandy';
   return s;
 }
-const titleCase = s => s.replace(/\b\w/g, c => c.toUpperCase());
-const slugify = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+const titleCase = s => String(s||'').replace(/\b\w/g, c => c.toUpperCase());
+const slugify = s => String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 const randomOf = arr => arr[Math.floor(Math.random()*arr.length)];
 const tag = t => `<span class="tag">${t}</span>`;
 
@@ -149,18 +166,24 @@ document.addEventListener('DOMContentLoaded', () => { boot().catch(console.error
 async function boot(){
   const seed = Array.isArray(window.RECIPES) ? window.RECIPES : [];
   const custom = await fetchCustom();
-  window.ALL_RECIPES = [...seed, ...custom];
+  // merge (custom overrides on same id)
+  const map = new Map();
+  [...seed, ...custom].forEach(r => { const id = r.id || slugify(r.name); map.set(id, { ...r, id }); });
+  window.ALL_RECIPES = Array.from(map.values()).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
 
   buildBaseCheckboxes(window.ALL_RECIPES);
   hydrateFromUrl();
 
-  document.getElementById('style').addEventListener('change', e => { state.style = e.target.value; syncUrl(); });
-  document.getElementById('sweetness').addEventListener('change', e => { state.sweetness = e.target.value; syncUrl(); });
-  document.getElementById('effort').addEventListener('change', e => { state.effort = e.target.value; syncUrl(); });
+  document.getElementById('style').addEventListener('change', e => { state.style = e.target.value; syncUrl(); maybeRefreshMatches(); });
+  document.getElementById('sweetness').addEventListener('change', e => { state.sweetness = e.target.value; syncUrl(); maybeRefreshMatches(); });
+  document.getElementById('effort').addEventListener('change', e => { state.effort = e.target.value; syncUrl(); maybeRefreshMatches(); });
 
   document.getElementById('generateBtn').addEventListener('click', handleGenerate);
   document.getElementById('regenBtn').addEventListener('click', handleRegenerate);
   document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+  // Hydrate search from URL (after ALL_RECIPES is set)
+  setTimeout(hydrateSearchFromUrl, 0);
 }
 
 async function fetchCustom(){
@@ -202,6 +225,7 @@ function buildBaseCheckboxes(recipes){
         state.bases.delete(e.target.value);
       }
       syncUrl();
+      maybeRefreshMatches();
     });
   });
 }
@@ -239,7 +263,8 @@ function matchesCriteria(r){
 
 function handleGenerate(){
   state.lastPool = window.ALL_RECIPES.filter(matchesCriteria);
-  pickAndRender(state.lastPool);
+  renderCriteriaResults(state.lastPool);            // show grid of all matches
+  pickAndRender(state.lastPool);                    // feature one pick as before
 }
 function handleRegenerate(){
   if (!state.lastPool.length){ handleGenerate(); return; }
@@ -268,6 +293,7 @@ function pickAndRender(pool){
     </div>`).join('') || '<p class="text-sm text-gray-500">No near matches either—clear a filter.</p>';
     resultEl.classList.add('hidden'); noResult.classList.remove('hidden');
     document.getElementById('regenBtn').disabled = true;
+    renderCriteriaResults([]); // hide grid
     wrapOpenHandlers();
     return;
   }
@@ -283,7 +309,12 @@ function wrapOpenHandlers(){
   document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', e => {
     const id = e.currentTarget.getAttribute('data-open');
     const r = window.ALL_RECIPES.find(x => x.id === id);
-    if (r){ document.getElementById('result').innerHTML = recipeCard(r); document.getElementById('result').classList.remove('hidden'); document.getElementById('noResult').classList.add('hidden'); }
+    if (r){
+      document.getElementById('result').innerHTML = recipeCard(r);
+      document.getElementById('result').classList.remove('hidden');
+      document.getElementById('noResult').classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }));
 }
 
@@ -325,6 +356,7 @@ function resetAll(){
   document.getElementById('style').value='any'; document.getElementById('sweetness').value='any'; document.getElementById('effort').value='any';
   document.getElementById('result').classList.add('hidden'); document.getElementById('noResult').classList.add('hidden');
   document.getElementById('regenBtn').disabled = true;
+  renderCriteriaResults([]); // hide grid
   syncUrl();
 }
 
@@ -335,7 +367,8 @@ document.addEventListener('click', (e) => {
     document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove();
   }
 });
-  /** ---------- Search (name, base, ingredients, tags, method) ---------- **/
+
+/** ---------- Search (name, base, ingredients, tags, method) ---------- **/
 const searchBox = document.getElementById('searchBox');
 const searchResults = document.getElementById('searchResults');
 const searchCount = document.getElementById('searchCount');
@@ -398,24 +431,112 @@ function hydrateSearchFromUrl() {
   if (q) { searchBox.value = q; doSearch(q); }
 }
 
-// Wire events after boot() merges seed + custom
-document.addEventListener('DOMContentLoaded', () => {
-  // When your boot() finishes, it sets window.ALL_RECIPES; run this a tick later.
-  setTimeout(hydrateSearchFromUrl, 0);
-
-  searchBox?.addEventListener('input', (e) => doSearch(e.target.value));
-  searchClear?.addEventListener('click', () => { searchBox.value=''; doSearch(''); });
-  searchExport?.addEventListener('click', () => {
-    const term = searchBox.value.trim();
-    const list = term ? (window.ALL_RECIPES||[]).filter(r=>searchHits(r, term)) : [];
-    const blob = new Blob([JSON.stringify(list, null, 2)], {type:'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = term ? `recipes-search-${term}.json` : 'recipes.json';
-    document.body.appendChild(a); a.click(); a.remove();
-  });
+// Wire search events
+searchBox?.addEventListener('input', (e) => doSearch(e.target.value));
+searchClear?.addEventListener('click', () => { searchBox.value=''; doSearch(''); });
+searchExport?.addEventListener('click', () => {
+  const term = searchBox.value.trim();
+  const list = term ? (window.ALL_RECIPES||[]).filter(r=>searchHits(r, term)) : [];
+  const blob = new Blob([JSON.stringify(list, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = term ? `recipes-search-${term}.json` : 'recipes.json';
+  document.body.appendChild(a); a.click(); a.remove();
 });
-  // ---------- Export merged catalog.js ----------
+
+/** ---------- Criteria matches grid ---------- **/
+const matchesSection = document.getElementById('matchesSection');
+const matchesGrid = document.getElementById('matchesGrid');
+const matchesCount = document.getElementById('matchesCount');
+
+function renderCriteriaResults(list){
+  if (!list || !list.length){
+    matchesSection.classList.add('hidden');
+    matchesGrid.innerHTML = '';
+    matchesCount.textContent = '';
+    return;
+  }
+  matchesSection.classList.remove('hidden');
+  matchesCount.textContent = `${list.length} match${list.length===1?'':'es'}`;
+
+  matchesGrid.innerHTML = '';
+  list.slice(0, 60).forEach(r => {
+    const ingPreview = (r.ingredients||[])
+      .map(([a,i]) => `<li><b>${a}</b> ${i}</li>`)
+      .join('');
+    const card = document.createElement('div');
+    card.className = 'card p-3';
+    card.innerHTML = `
+      <div class="flex items-center justify-between">
+        <h4 class="font-semibold">${r.name}</h4>
+        <button class="text-violet-600 underline" data-open="${r.id}">Open</button>
+      </div>
+      <div class="text-xs text-gray-600 mt-1">
+        ${(r.base||[]).map(b=>titleCase(normBase(String(b).toLowerCase())))
+          .filter((v,i,a)=>a.indexOf(v)===i).join(', ')}
+      </div>
+      ${(r.tags||[]).length ? `<div class="mt-1">${(r.tags||[]).map(tag).join('')}</div>`:''}
+      <details class="mt-2">
+        <summary class="cursor-pointer text-sm">Preview ingredients</summary>
+        <ul class="list-disc pl-6 text-sm mt-1">${ingPreview}</ul>
+      </details>
+    `;
+    matchesGrid.appendChild(card);
+  });
+
+  wrapOpenHandlers();
+}
+
+function maybeRefreshMatches(){
+  if (!matchesSection.classList.contains('hidden')){
+    state.lastPool = window.ALL_RECIPES.filter(matchesCriteria);
+    renderCriteriaResults(state.lastPool);
+    document.getElementById('regenBtn').disabled = state.lastPool.length <= 1;
+  }
+}
+
+/** ---------- Refresh data (re-fetch custom-recipes.json) ---------- **/
+document.getElementById('refreshDataBtn')?.addEventListener('click', refreshData);
+
+async function refreshData() {
+  const status = document.getElementById('refreshStatus');
+  status.textContent = 'Refreshing…';
+
+  try {
+    const custom = await fetchCustom();
+    const seed = Array.isArray(window.RECIPES) ? window.RECIPES : [];
+    const map = new Map();
+    const slug = s => String(s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    [...seed, ...custom].forEach(r => { const id = r.id || slug(r.name); map.set(id, { ...r, id }); });
+    window.ALL_RECIPES = Array.from(map.values()).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+
+    // Rebuild bases, keep selections
+    const prev = new Set(state.bases);
+    buildBaseCheckboxes(window.ALL_RECIPES);
+    Array.from(prev).forEach(b => {
+      const idAttr = `base-${b.replace(/\s+/g,'-')}`;
+      const cb = document.getElementById(idAttr);
+      if (cb) { cb.checked = true; state.bases.add(b); }
+    });
+
+    // Refresh featured + grid if visible
+    maybeRefreshMatches();
+    if (state.lastPool?.length) {
+      pickAndRender(state.lastPool);
+    }
+
+    // Re-run search if a term is present
+    if (searchBox && typeof doSearch === 'function') doSearch(searchBox.value);
+
+    status.textContent = 'Refreshed ✔';
+    setTimeout(() => status.textContent = '', 1500);
+  } catch (e) {
+    console.error(e);
+    status.textContent = 'Refresh failed — check console.';
+  }
+}
+
+/** ---------- Export merged catalog.js ---------- **/
 document.getElementById('exportCatalogBtn')?.addEventListener('click', () => {
   const merged = Array.isArray(window.ALL_RECIPES) ? window.ALL_RECIPES : [];
   const js = `(function(){\n  window.RECIPES = ${JSON.stringify(merged, null, 2)};\n})();\n`;
