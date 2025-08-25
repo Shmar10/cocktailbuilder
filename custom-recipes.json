@@ -73,5 +73,47 @@
       "shaken",
       "modern classic"
     ]
+  },
+  {
+    "id": "pineapple-paper-plane",
+    "name": "Pineapple Paper Plane",
+    "base": [
+      "bourbon"
+    ],
+    "profile": [
+      "tropical",
+      "bitter"
+    ],
+    "sweetness": "balanced",
+    "ingredients": [
+      [
+        "1 oz",
+        "Bourbon"
+      ],
+      [
+        "1 oz",
+        "Aperol"
+      ],
+      [
+        "1 oz",
+        "Pineapple Amaro"
+      ],
+      [
+        "1 oz",
+        "Pineapple juice"
+      ],
+      [
+        "0.25 oz",
+        "Lemon juice"
+      ]
+    ],
+    "method": "Shake with ice, strain into coupe.",
+    "glass": "Coupe",
+    "garnish": "Pineapple leaf or dehydrated pineapple wheel",
+    "tags": [
+      "shaken",
+      "tropical",
+      "riff"
+    ]
   }
 ]
