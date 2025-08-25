@@ -27,6 +27,20 @@
   </header>
 
   <main class="mx-auto max-w-5xl px-4 py-6 grid gap-6 lg:grid-cols-5">
+    <!-- Search -->
+    <section class="card p-4 lg:col-span-5">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-lg font-bold">Search recipes</h2>
+        <div class="text-sm text-gray-500" id="searchCount"></div>
+      </div>
+      <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+        <input id="searchBox" class="input" placeholder="type to search (e.g., pineapple, mezcal, coupe)…" />
+        <button id="searchClear" class="btn">Clear</button>
+        <button id="searchExport" class="btn">Export results</button>
+      </div>
+     <p class="text-xs text-gray-500 mt-1">Searches name, ingredients, method, tags, and base. Click a result to open it.</p>
+      <div id="searchResults" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </section>
     <!-- Controls -->
     <section class="card p-4 lg:col-span-2">
       <h2 class="text-lg font-bold mb-3">Your criteria</h2>
@@ -316,6 +330,86 @@ document.addEventListener('click', (e) => {
     el.value = document.getElementById('result').innerText;
     document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove();
   }
+});
+  /** ---------- Search (name, base, ingredients, tags, method) ---------- **/
+const searchBox = document.getElementById('searchBox');
+const searchResults = document.getElementById('searchResults');
+const searchCount = document.getElementById('searchCount');
+const searchClear = document.getElementById('searchClear');
+const searchExport = document.getElementById('searchExport');
+
+function searchHits(r, q) {
+  const s = q.toLowerCase();
+  const hit = (txt) => String(txt||'').toLowerCase().includes(s);
+  if (hit(r.name)) return true;
+  if (hit(r.method)) return true;
+  if ((r.base||[]).some(hit)) return true;
+  if ((r.tags||[]).some(hit)) return true;
+  if ((r.ingredients||[]).some(([a,i]) => hit(a) || hit(i))) return true;
+  return false;
+}
+
+function renderSearchResults(list) {
+  searchResults.innerHTML = '';
+  searchCount.textContent = `${list.length} match${list.length===1?'':'es'}`;
+  if (!list.length) {
+    searchResults.innerHTML = '<p class="text-sm text-gray-500">No matches. Try another term.</p>';
+    return;
+  }
+  list.slice(0, 60).forEach(r => {
+    const ing = (r.ingredients||[]).map(([a,i]) => `<li><b>${a}</b> ${i}</li>`).join('');
+    const card = document.createElement('div');
+    card.className = 'card p-3';
+    card.innerHTML = `
+      <div class="flex items-center justify-between">
+        <h4 class="font-semibold">${r.name}</h4>
+        <button class="text-violet-600 underline" data-open="${r.id}">Open</button>
+      </div>
+      <div class="text-xs text-gray-600 mt-1">${(r.base||[]).map(b=>titleCase(normBase(String(b).toLowerCase()))).filter((v,i,a)=>a.indexOf(v)===i).join(', ')}</div>
+      ${(r.tags||[]).length ? `<div class="mt-1">${(r.tags||[]).map(tag).join('')}</div>`:''}
+      <details class="mt-2">
+        <summary class="cursor-pointer text-sm">Preview ingredients</summary>
+        <ul class="list-disc pl-6 text-sm mt-1">${ing}</ul>
+      </details>
+    `;
+    searchResults.appendChild(card);
+  });
+  wrapOpenHandlers();
+}
+
+function doSearch(q) {
+  const term = (q||'').trim();
+  const params = new URLSearchParams(location.search);
+  if (term) params.set('q', term); else params.delete('q');
+  history.replaceState(null, '', location.pathname + (params.toString()?`?${params}`:''));
+
+  if (!term) { searchResults.innerHTML=''; searchCount.textContent=''; return; }
+  const pool = (window.ALL_RECIPES||[]).filter(r => searchHits(r, term));
+  renderSearchResults(pool);
+}
+
+function hydrateSearchFromUrl() {
+  const p = new URLSearchParams(location.search);
+  const q = p.get('q') || '';
+  if (q) { searchBox.value = q; doSearch(q); }
+}
+
+// Wire events after boot() merges seed + custom
+document.addEventListener('DOMContentLoaded', () => {
+  // When your boot() finishes, it sets window.ALL_RECIPES; run this a tick later.
+  setTimeout(hydrateSearchFromUrl, 0);
+
+  searchBox?.addEventListener('input', (e) => doSearch(e.target.value));
+  searchClear?.addEventListener('click', () => { searchBox.value=''; doSearch(''); });
+  searchExport?.addEventListener('click', () => {
+    const term = searchBox.value.trim();
+    const list = term ? (window.ALL_RECIPES||[]).filter(r=>searchHits(r, term)) : [];
+    const blob = new Blob([JSON.stringify(list, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = term ? `recipes-search-${term}.json` : 'recipes.json';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
 });
   </script>
 </body>
