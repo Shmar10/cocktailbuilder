@@ -9,18 +9,21 @@
   <!-- Tailwind Play CDN for simple GitHub Pages hosting (no build step) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Extra tiny tweaks outside Tailwind */
-    .tag { @apply inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium mr-1 mb-1; }
-    .chip { @apply inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium mr-2 mb-2; }
-    .btn { @apply inline-flex items-center gap-2 rounded-2xl px-4 py-2 font-semibold shadow-sm active:scale-95 transition; }
-    .btn-primary { @apply bg-violet-600 text-white hover:bg-violet-700; }
-    .btn-ghost { @apply bg-white text-gray-700 border hover:bg-gray-50; }
-    .btn-danger { @apply bg-rose-600 text-white hover:bg-rose-700; }
-    .card { @apply rounded-3xl border bg-white shadow-md; }
-    .section { @apply rounded-2xl border bg-white/60 backdrop-blur-sm; }
-    .input { @apply w-full rounded-xl border px-3 py-2; }
-    .select { @apply w-full rounded-xl border px-3 py-2 bg-white; }
-    .kbd { @apply inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-mono bg-gray-50; }
+    /* Minimal CSS helpers (avoids Tailwind @apply which requires a build step) */
+    .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:1rem; padding:.5rem 1rem; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.08); transition:transform .05s ease; }
+    .btn:active { transform:scale(.97); }
+    .btn-primary { background:#6d28d9; color:#fff; }
+    .btn-primary:hover { background:#5b21b6; }
+    .btn-ghost { background:#fff; color:#374151; border:1px solid #e5e7eb; }
+    .btn-ghost:hover { background:#f9fafb; }
+    .btn-danger { background:#e11d48; color:#fff; }
+    .btn-danger:hover { background:#be123c; }
+    .card { border:1px solid #e5e7eb; border-radius:1.5rem; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+    .section { border:1px solid #e5e7eb; border-radius:1rem; background:rgba(255,255,255,.6); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+    .input, .select { width:100%; border:1px solid #e5e7eb; border-radius:.75rem; padding:.5rem .75rem; background:#fff; }
+    .chip { display:inline-flex; align-items:center; border-radius:9999px; background:#f3f4f6; padding:.25rem .625rem; font-size:.75rem; font-weight:600; margin-right:.5rem; margin-bottom:.5rem; }
+    .tag { display:inline-flex; align-items:center; border:1px solid #d1d5db; border-radius:9999px; padding:.125rem .5rem; font-size:.75rem; font-weight:600; margin-right:.25rem; margin-bottom:.25rem; background:#fff; color:#374151; }
+    .kbd { display:inline-flex; align-items:center; border:1px solid #e5e7eb; border-radius:.375rem; padding:.125rem .375rem; font-size:.75rem; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; background:#f9fafb; }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-violet-50 text-slate-800">
@@ -95,6 +98,7 @@
         <div class="flex flex-wrap gap-2 pt-1">
           <button id="generateBtn" class="btn btn-primary">Generate recipe</button>
           <button id="regenBtn" class="btn btn-ghost" disabled>↻ Regenerate</button>
+          <button id="aiBtn" class="btn btn-ghost hidden">✨ Generate (AI)</button>
           <button id="resetBtn" class="btn btn-ghost">Reset</button>
         </div>
       </div>
@@ -129,23 +133,25 @@
           <li>Don’t love it? Tap <strong>Regenerate</strong> to spin another that fits the same criteria.</li>
           <li>Click <strong>★ Favorite</strong> to save a recipe to your device (local-only). Export/Import as JSON to share.</li>
           <li>Share a link with your selections—your picks are embedded in the URL.</li>
-          <li>100% client-side. Host on GitHub Pages by dropping this file in a repo as <code>index.html</code>.</li>
+          <li><strong>Optional AI:</strong> If you configure an AI endpoint, you’ll see a <em>✨ Generate (AI)</em> button for on-the-fly recipes.</li>
+          <li>100% client-side (AI optional). Host on GitHub Pages by dropping this file in a repo as <code>index.html</code>.</li>
         </ul>
       </section>
     </section>
   </main>
 
   <footer class="mx-auto max-w-6xl px-4 py-8 text-center text-xs text-gray-500">
-    Built with 🍹 and vanilla JS. No tracking. Edit/extend recipes in the source.
+    Built with 🍹 and vanilla JS. No tracking. Edit/extend recipes in <code>catalog.js</code>.
   </footer>
 
+<script src="catalog.js"></script>
 <script>
-/***********************\
+/***********************
 *  DATA & UTILITIES     *
-\***********************/
+***********************/
 const SPIRITS = [
-  'bourbon','rye','scotch','irish whiskey','rum','jamaican rum','overproof rum','tequila','mezcal','gin','vodka','brandy','cognac','pisco','calvados','aperol','campari','amaro','swedish punsch','coffee liqueur','triple sec','curaçao','chartreuse green','chartreuse yellow','vermouth sweet','vermouth dry','champagne','prosecco']
-  .map(s => ({ id: s, label: titleCase(s) }));
+  'bourbon','rye','scotch','irish whiskey','rum','jamaican rum','overproof rum','tequila','mezcal','gin','vodka','brandy','cognac','pisco','calvados','aperol','campari','amaro','swedish punsch','coffee liqueur','triple sec','curaçao','chartreuse green','chartreuse yellow','vermouth sweet','vermouth dry','champagne','prosecco'
+].map(s => ({ id: s, label: titleCase(s) }));
 
 // Map sub-types back to their umbrella for base matching
 const BASE_NORMALIZE = {
@@ -162,7 +168,7 @@ function sweetnessFromCount(n){ if(n <= 4) return 'dry'; if(n <= 6) return 'bala
 function titleCase(s){ return s.replace(/\b\w/g, c => c.toUpperCase()); }
 
 function tagPill(text){
-  return `<span class="tag border-gray-300 text-gray-700 bg-white">${text}</span>`;
+  return `<span class="tag">${text}</span>`;
 }
 
 function randomOf(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -171,682 +177,9 @@ function slugify(s){
   return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 }
 
-/***********************\
-*  RECIPE CATALOG       *
-\***********************/
-// Minimal, opinionated specs. Edit freely!
-const RECIPES = [
-  {
-    name: 'Old Fashioned',
-    id: 'old-fashioned',
-    base: ['bourbon','rye'],
-    profile: ['spirit-forward','aromatic'],
-    sweetness: 'dry',
-    ingredients: [
-      ['2 oz','Bourbon or rye'],
-      ['1 tsp','Demerara syrup (2:1)'],
-      ['2 dashes','Angostura bitters']
-    ],
-    method: 'Stir with ice 20–30 sec. Strain over a large cube.',
-    glass: 'Rocks',
-    garnish: 'Expressed orange peel',
-    tags: ['classic','stirred']
-  },
-  {
-    name: 'Manhattan',
-    id: 'manhattan',
-    base: ['rye','bourbon'],
-    profile: ['spirit-forward','aromatic'],
-    sweetness: 'dry',
-    ingredients: [
-      ['2 oz','Rye or bourbon'],
-      ['1 oz','Sweet vermouth'],
-      ['2 dashes','Angostura bitters']
-    ],
-    method: 'Stir with ice, strain into a chilled coupe.',
-    glass: 'Coupe',
-    garnish: 'Brandied cherry',
-    tags: ['classic','stirred']
-  },
-  {
-    name: 'Martini (Gin)',
-    id: 'martini-gin',
-    base: ['gin'],
-    profile: ['spirit-forward','aromatic'],
-    sweetness: 'dry',
-    ingredients: [
-      ['2.5 oz','Gin'],
-      ['0.5 oz','Dry vermouth'],
-      ['1 dash','Orange bitters (optional)']
-    ],
-    method: 'Stir with ice, strain into a chilled coupe.',
-    glass: 'Coupe',
-    garnish: 'Lemon twist or olive',
-    tags: ['classic','stirred']
-  },
-  {
-    name: 'Vodka Martini',
-    id: 'martini-vodka',
-    base: ['vodka'],
-    profile: ['spirit-forward'],
-    sweetness: 'dry',
-    ingredients: [
-      ['2.5 oz','Vodka'],
-      ['0.5 oz','Dry vermouth']
-    ],
-    method: 'Stir (or shake) with ice, strain into a chilled coupe.',
-    glass: 'Coupe',
-    garnish: 'Lemon twist',
-    tags: ['classic']
-  },
-  {
-    name: 'Margarita',
-    id: 'margarita',
-    base: ['tequila'],
-    profile: ['citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Tequila blanco'],
-      ['1 oz','Lime juice'],
-      ['0.75 oz','Triple sec (or curaçao)']
-    ],
-    method: 'Shake with ice, strain over fresh ice or up.',
-    glass: 'Rocks or Coupe',
-    garnish: 'Salt rim, lime wheel',
-    tags: ['sour','shaken']
-  },
-  {
-    name: 'Daiquiri',
-    id: 'daiquiri',
-    base: ['rum'],
-    profile: ['citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','White rum'],
-      ['1 oz','Lime juice'],
-      ['0.75 oz','Simple syrup']
-    ],
-    method: 'Shake with ice, strain into a chilled coupe.',
-    glass: 'Coupe',
-    garnish: 'None needed',
-    tags: ['sour','shaken']
-  },
-  {
-    name: 'Whiskey Sour',
-    id: 'whiskey-sour',
-    base: ['bourbon'],
-    profile: ['citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Bourbon'],
-      ['0.75 oz','Lemon juice'],
-      ['0.75 oz','Simple syrup'],
-      ['1','Egg white (optional)']
-    ],
-    method: 'Shake (dry if using egg), then with ice. Strain over fresh ice.',
-    glass: 'Rocks',
-    garnish: 'Angostura dash art',
-    tags: ['sour','shaken']
-  },
-  {
-    name: 'Tom Collins',
-    id: 'tom-collins',
-    base: ['gin'],
-    profile: ['bubbly','citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Gin'],
-      ['0.75 oz','Lemon juice'],
-      ['0.75 oz','Simple syrup'],
-      ['Top','Soda water']
-    ],
-    method: 'Build over ice, gentle stir, top with soda.',
-    glass: 'Collins',
-    garnish: 'Lemon wheel, cherry',
-    tags: ['highball','built']
-  },
-  {
-    name: 'Negroni',
-    id: 'negroni',
-    base: ['gin'],
-    profile: ['bitter','spirit-forward'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['1 oz','Gin'],
-      ['1 oz','Campari'],
-      ['1 oz','Sweet vermouth']
-    ],
-    method: 'Stir with ice, strain over a large cube or serve up.',
-    glass: 'Rocks or Coupe',
-    garnish: 'Orange peel',
-    tags: ['classic','stirred']
-  },
-  {
-    name: 'Boulevardier',
-    id: 'boulevardier',
-    base: ['bourbon'],
-    profile: ['bitter','spirit-forward'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['1.5 oz','Bourbon'],
-      ['1 oz','Campari'],
-      ['1 oz','Sweet vermouth']
-    ],
-    method: 'Stir with ice, strain into coupe or over a big cube.',
-    glass: 'Coupe or Rocks',
-    garnish: 'Orange peel',
-    tags: ['stirred']
-  },
-  {
-    name: 'Paper Plane',
-    id: 'paper-plane',
-    base: ['bourbon'],
-    profile: ['bitter','citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['0.75 oz','Bourbon'],
-      ['0.75 oz','Aperol'],
-      ['0.75 oz','Amaro Nonino (or similar)'],
-      ['0.75 oz','Lemon juice']
-    ],
-    method: 'Shake with ice, strain into a coupe.',
-    glass: 'Coupe',
-    garnish: 'Lemon twist (optional)',
-    tags: ['modern','shaken']
-  },
-  {
-    name: 'Last Word',
-    id: 'last-word',
-    base: ['gin'],
-    profile: ['herbal','citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['0.75 oz','Gin'],
-      ['0.75 oz','Green Chartreuse'],
-      ['0.75 oz','Maraschino liqueur'],
-      ['0.75 oz','Lime juice']
-    ],
-    method: 'Shake with ice, strain into a coupe.',
-    glass: 'Coupe',
-    garnish: 'None',
-    tags: ['shaken']
-  },
-  {
-    name: 'Corpse Reviver No. 2',
-    id: 'corpse-reviver-2',
-    base: ['gin'],
-    profile: ['citrusy','herbal'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['0.75 oz','Gin'],
-      ['0.75 oz','Cointreau'],
-      ['0.75 oz','Lillet Blanc (or Cocchi Americano)'],
-      ['0.75 oz','Lemon juice'],
-      ['Rinse','Absinthe']
-    ],
-    method: 'Shake with ice, strain into an absinthe-rinsed coupe.',
-    glass: 'Coupe',
-    garnish: 'Cherry (optional)',
-    tags: ['classic','shaken']
-  },
-  {
-    name: 'French 75',
-    id: 'french-75',
-    base: ['gin'],
-    profile: ['bubbly','citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['1 oz','Gin'],
-      ['0.5 oz','Lemon juice'],
-      ['0.5 oz','Simple syrup'],
-      ['Top','Champagne']
-    ],
-    method: 'Shake first three with ice, strain into flute, top with Champagne.',
-    glass: 'Flute',
-    garnish: 'Lemon twist',
-    tags: ['sparkling']
-  },
-  {
-    name: 'Mojito',
-    id: 'mojito',
-    base: ['rum'],
-    profile: ['citrusy','herbal'],
-    sweetness: 'sweet',
-    ingredients: [
-      ['2 oz','White rum'],
-      ['0.75 oz','Lime juice'],
-      ['0.5 oz','Simple syrup'],
-      ['8–10','Mint leaves'],
-      ['Top','Soda water']
-    ],
-    method: 'Lightly muddle mint with syrup, add rum & lime, ice, top with soda.',
-    glass: 'Collins',
-    garnish: 'Mint bouquet',
-    tags: ['highball']
-  },
-  {
-    name: 'Mai Tai',
-    id: 'mai-tai',
-    base: ['rum','jamaican rum'],
-    profile: ['tiki','citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Aged rum (split base encouraged)'],
-      ['0.75 oz','Lime juice'],
-      ['0.5 oz','Orange curaçao'],
-      ['0.25 oz','Orgeat'],
-      ['0.25 oz','Demerara syrup']
-    ],
-    method: 'Shake, dump into rocks with crushed ice.',
-    glass: 'Rocks',
-    garnish: 'Mint, spent lime shell',
-    tags: ['tiki','shaken']
-  },
-  {
-    name: 'Jungle Bird',
-    id: 'jungle-bird',
-    base: ['rum'],
-    profile: ['tiki','bitter'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['1.5 oz','Dark rum'],
-      ['0.75 oz','Campari'],
-      ['1.5 oz','Pineapple juice'],
-      ['0.5 oz','Lime juice'],
-      ['0.5 oz','Demerara syrup']
-    ],
-    method: 'Shake with ice, strain over fresh ice.',
-    glass: 'Rocks',
-    garnish: 'Pineapple frond',
-    tags: ['tiki','shaken']
-  },
-  {
-    name: 'Paloma',
-    id: 'paloma',
-    base: ['tequila'],
-    profile: ['bubbly','citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Tequila blanco'],
-      ['0.5 oz','Lime juice'],
-      ['Top','Grapefruit soda']
-    ],
-    method: 'Build over ice, gentle stir.',
-    glass: 'Highball',
-    garnish: 'Salt rim, grapefruit wedge',
-    tags: ['highball']
-  },
-  {
-    name: 'Old Cuban',
-    id: 'old-cuban',
-    base: ['rum'],
-    profile: ['bubbly','herbal'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['1.5 oz','Aged rum'],
-      ['0.75 oz','Lime juice'],
-      ['0.75 oz','Simple syrup'],
-      ['6–8','Mint leaves'],
-      ['2 dashes','Angostura bitters'],
-      ['Top','Champagne']
-    ],
-    method: 'Shake (no Champagne), fine strain into coupe, top with Champagne.',
-    glass: 'Coupe',
-    garnish: 'Mint leaf',
-    tags: ['sparkling','shaken']
-  },
-  {
-    name: 'Sazerac',
-    id: 'sazerac',
-    base: ['rye'],
-    profile: ['spirit-forward','aromatic'],
-    sweetness: 'dry',
-    ingredients: [
-      ['2 oz','Rye whiskey'],
-      ['0.25 oz','Demerara syrup'],
-      ['3 dashes','Peychaud’s bitters'],
-      ['Rinse','Absinthe']
-    ],
-    method: 'Stir with ice. Rinse chilled glass with absinthe. Strain neat.',
-    glass: 'Rocks (no ice)',
-    garnish: 'Expressed lemon peel',
-    tags: ['new-orleans','stirred']
-  },
-  {
-    name: 'Vieux Carré',
-    id: 'vieux-carre',
-    base: ['rye','cognac'],
-    profile: ['spirit-forward','aromatic'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['0.75 oz','Rye'],
-      ['0.75 oz','Cognac'],
-      ['0.75 oz','Sweet vermouth'],
-      ['0.25 oz','Bénédictine'],
-      ['2 dashes','Angostura'],
-      ['2 dashes','Peychaud’s']
-    ],
-    method: 'Stir with ice, strain into rocks with large cube.',
-    glass: 'Rocks',
-    garnish: 'Orange peel',
-    tags: ['classic','stirred']
-  },
-  {
-    name: 'Penicillin',
-    id: 'penicillin',
-    base: ['scotch'],
-    profile: ['citrusy','herbal'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Blended Scotch'],
-      ['0.75 oz','Lemon juice'],
-      ['0.75 oz','Honey-ginger syrup'],
-      ['0.25 oz','Islay Scotch (float)']
-    ],
-    method: 'Shake first three, strain over ice. Float Islay.',
-    glass: 'Rocks',
-    garnish: 'Candied ginger',
-    tags: ['modern','shaken']
-  },
-  {
-    name: 'Pisco Sour',
-    id: 'pisco-sour',
-    base: ['pisco'],
-    profile: ['citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Pisco'],
-      ['1 oz','Lime juice'],
-      ['0.75 oz','Simple syrup'],
-      ['1','Egg white']
-    ],
-    method: 'Dry shake, then shake with ice. Strain into coupe.',
-    glass: 'Coupe',
-    garnish: '3 drops Angostura',
-    tags: ['sour','shaken']
-  },
-  {
-    name: 'Sidecar',
-    id: 'sidecar',
-    base: ['cognac'],
-    profile: ['citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Cognac'],
-      ['0.75 oz','Cointreau'],
-      ['0.75 oz','Lemon juice']
-    ],
-    method: 'Shake with ice, strain into coupe (sugar rim optional).',
-    glass: 'Coupe',
-    garnish: 'Orange twist',
-    tags: ['classic','shaken']
-  },
-  {
-    name: 'Espresso Martini',
-    id: 'espresso-martini',
-    base: ['vodka','coffee liqueur'],
-    profile: ['dessert'],
-    sweetness: 'sweet',
-    ingredients: [
-      ['1.5 oz','Vodka'],
-      ['1 oz','Fresh espresso'],
-      ['0.5 oz','Coffee liqueur'],
-      ['0.25 oz','Simple syrup (to taste)']
-    ],
-    method: 'Shake hard with ice, fine strain into coupe.',
-    glass: 'Coupe',
-    garnish: '3 coffee beans',
-    tags: ['modern','shaken']
-  },
-  {
-    name: 'White Russian',
-    id: 'white-russian',
-    base: ['vodka','coffee liqueur'],
-    profile: ['dessert'],
-    sweetness: 'sweet',
-    ingredients: [
-      ['2 oz','Vodka'],
-      ['1 oz','Coffee liqueur'],
-      ['1 oz','Cream (or alt)']
-    ],
-    method: 'Build over ice, gentle stir.',
-    glass: 'Rocks',
-    garnish: 'None',
-    tags: ['creamy','built']
-  },
-  {
-    name: 'Moscow Mule',
-    id: 'moscow-mule',
-    base: ['vodka'],
-    profile: ['bubbly','citrusy'],
-    sweetness: 'sweet',
-    ingredients: [
-      ['2 oz','Vodka'],
-      ['0.5 oz','Lime juice'],
-      ['Top','Ginger beer']
-    ],
-    method: 'Build over ice, gentle stir.',
-    glass: 'Copper mug or Highball',
-    garnish: 'Lime wedge',
-    tags: ['highball','built']
-  },
-  {
-    name: "Dark 'n Stormy",
-    id: 'dark-n-stormy',
-    base: ['rum'],
-    profile: ['bubbly','citrusy'],
-    sweetness: 'sweet',
-    ingredients: [
-      ['2 oz','Dark rum'],
-      ['0.5 oz','Lime juice (optional)'],
-      ['Top','Ginger beer']
-    ],
-    method: 'Build over ice, float rum if desired.',
-    glass: 'Highball',
-    garnish: 'Lime wedge',
-    tags: ['highball','built']
-  },
-  {
-    name: 'Gimlet',
-    id: 'gimlet',
-    base: ['gin'],
-    profile: ['citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Gin'],
-      ['0.75 oz','Lime juice'],
-      ['0.75 oz','Simple syrup']
-    ],
-    method: 'Shake with ice, strain into coupe (or stir with lime cordial).',
-    glass: 'Coupe',
-    garnish: 'Lime wheel',
-    tags: ['sour','shaken']
-  },
-  {
-    name: 'Hanky Panky',
-    id: 'hanky-panky',
-    base: ['gin'],
-    profile: ['herbal','spirit-forward'],
-    sweetness: 'dry',
-    ingredients: [
-      ['1.5 oz','Gin'],
-      ['1.5 oz','Sweet vermouth'],
-      ['0.25 oz','Fernet-Branca']
-    ],
-    method: 'Stir with ice, strain into coupe.',
-    glass: 'Coupe',
-    garnish: 'Orange twist',
-    tags: ['stirred']
-  },
-  {
-    name: 'Aperol Spritz',
-    id: 'aperol-spritz',
-    base: ['aperol'],
-    profile: ['bubbly','bitter'],
-    sweetness: 'sweet',
-    ingredients: [
-      ['3 oz','Prosecco'],
-      ['2 oz','Aperol'],
-      ['1 oz','Soda water']
-    ],
-    method: 'Build over ice in a wine glass.',
-    glass: 'Wine',
-    garnish: 'Orange slice',
-    tags: ['spritz','built']
-  },
-  {
-    name: 'Doctor Cocktail',
-    id: 'doctor-cocktail',
-    base: ['rum','swedish punsch'],
-    profile: ['citrusy','tiki'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['1.5 oz','Swedish Punsch (e.g., Kronan)'],
-      ['0.75 oz','Aged rum'],
-      ['0.75 oz','Lime juice']
-    ],
-    method: 'Shake with ice, strain into coupe.',
-    glass: 'Coupe',
-    garnish: 'Lime wheel',
-    tags: ['vintage','shaken']
-  },
-  {
-    name: 'Diki-Diki',
-    id: 'diki-diki',
-    base: ['calvados','swedish punsch'],
-    profile: ['citrusy'],
-    sweetness: 'dry',
-    ingredients: [
-      ['1.5 oz','Calvados'],
-      ['0.75 oz','Swedish Punsch'],
-      ['0.75 oz','Grapefruit juice']
-    ],
-    method: 'Shake with ice, strain into coupe.',
-    glass: 'Coupe',
-    garnish: 'Grapefruit twist',
-    tags: ['vintage','shaken']
-  },
-  {
-    name: 'Biffy Cocktail',
-    id: 'biffy',
-    base: ['gin','swedish punsch'],
-    profile: ['citrusy','herbal'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['1.5 oz','Gin'],
-      ['0.75 oz','Swedish Punsch'],
-      ['0.5 oz','Lemon juice'],
-      ['0.25 oz','Simple syrup (to taste)']
-    ],
-    method: 'Shake with ice, strain into coupe.',
-    glass: 'Coupe',
-    garnish: 'Lemon twist',
-    tags: ['vintage','shaken']
-  },
-  {
-    name: 'Toronto',
-    id: 'toronto',
-    base: ['rye'],
-    profile: ['herbal','spirit-forward'],
-    sweetness: 'dry',
-    ingredients: [
-      ['2 oz','Rye whiskey'],
-      ['0.25 oz','Fernet-Branca'],
-      ['0.25 oz','Simple syrup'],
-      ['2 dashes','Angostura bitters']
-    ],
-    method: 'Stir with ice, strain into coupe.',
-    glass: 'Coupe',
-    garnish: 'Orange twist',
-    tags: ['stirred']
-  },
-  {
-    name: 'Bramble',
-    id: 'bramble',
-    base: ['gin'],
-    profile: ['citrusy','dessert'],
-    sweetness: 'sweet',
-    ingredients: [
-      ['2 oz','Gin'],
-      ['0.75 oz','Lemon juice'],
-      ['0.5 oz','Simple syrup'],
-      ['0.5 oz','Crème de mûre (float)']
-    ],
-    method: 'Shake first three, strain over crushed ice. Float mûre.',
-    glass: 'Rocks',
-    garnish: 'Blackberries, lemon slice',
-    tags: ['modern','shaken']
-  },
-  {
-    name: 'New York Sour',
-    id: 'new-york-sour',
-    base: ['bourbon'],
-    profile: ['citrusy'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Bourbon'],
-      ['0.75 oz','Lemon juice'],
-      ['0.75 oz','Simple syrup'],
-      ['0.5 oz','Dry red wine (float)']
-    ],
-    method: 'Shake first three, strain over ice. Float red wine.',
-    glass: 'Rocks',
-    garnish: 'Orange peel (optional)',
-    tags: ['shaken']
-  },
-  {
-    name: 'Rum Old Fashioned',
-    id: 'rum-old-fashioned',
-    base: ['rum'],
-    profile: ['spirit-forward'],
-    sweetness: 'dry',
-    ingredients: [
-      ['2 oz','Aged rum'],
-      ['1 tsp','Demerara syrup'],
-      ['2 dashes','Angostura']
-    ],
-    method: 'Stir with ice, strain over large cube.',
-    glass: 'Rocks',
-    garnish: 'Orange peel',
-    tags: ['stirred']
-  },
-  {
-    name: "Bee's Knees",
-    id: 'bees-knees',
-    base: ['gin'],
-    profile: ['citrusy','herbal'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['2 oz','Gin'],
-      ['0.75 oz','Lemon juice'],
-      ['0.75 oz','Honey syrup (1:1)']
-    ],
-    method: 'Shake with ice, strain into coupe.',
-    glass: 'Coupe',
-    garnish: 'Lemon twist',
-    tags: ['prohibition','shaken']
-  },
-  {
-    name: 'Kingston Negroni',
-    id: 'kingston-negroni',
-    base: ['jamaican rum'],
-    profile: ['bitter','spirit-forward'],
-    sweetness: 'balanced',
-    ingredients: [
-      ['1 oz','Jamaican rum'],
-      ['1 oz','Campari'],
-      ['1 oz','Sweet vermouth']
-    ],
-    method: 'Stir with ice, strain over a large cube.',
-    glass: 'Rocks',
-    garnish: 'Orange peel',
-    tags: ['stirred']
-  }
-];
-
-/***********************\
+/***********************
 *  STATE               *
-\***********************/
+***********************/
 const state = {
   bases: new Set(),
   style: 'any',
@@ -856,9 +189,14 @@ const state = {
   lastPick: null,
 };
 
-/***********************\
+// ====== AI CONFIG ======
+// Set this to your deployed serverless endpoint URL to enable AI generation.
+// Example: const AI_ENDPOINT = 'https://your-domain.vercel.app/api/generate-cocktail';
+const AI_ENDPOINT = '';
+
+/***********************
 *  INITIALIZE UI        *
-\***********************/
+***********************/
 const baseWrap = document.getElementById('baseSpirits');
 SPIRITS.filter(s => !['aperol','campari','amaro','chartreuse green','chartreuse yellow','vermouth sweet','vermouth dry','champagne','prosecco','triple sec','curaçao','coffee liqueur'].includes(s.id))
   .forEach(({id,label}) => {
@@ -894,12 +232,17 @@ SPIRITS.filter(s => !['aperol','campari','amaro','chartreuse green','chartreuse 
 const generateBtn = document.getElementById('generateBtn');
 const regenBtn = document.getElementById('regenBtn');
 const resetBtn = document.getElementById('resetBtn');
+const aiBtn = document.getElementById('aiBtn');
 const favoritesTabBtn = document.getElementById('favoritesTabBtn');
 const favoritesPanel = document.getElementById('favoritesPanel');
 
 generateBtn.addEventListener('click', handleGenerate);
 regenBtn.addEventListener('click', handleRegenerate);
 resetBtn.addEventListener('click', resetAll);
+if (AI_ENDPOINT) {
+  aiBtn.classList.remove('hidden');
+  aiBtn.addEventListener('click', handleGenerateAI);
+}
 favoritesTabBtn.addEventListener('click', () => {
   favoritesPanel.classList.toggle('hidden');
   renderFavorites();
@@ -930,11 +273,55 @@ function syncUrl(){
   history.replaceState(null, '', newUrl);
 }
 
-/***********************\
+/***********************
 *  CORE LOGIC           *
-\***********************/
+***********************/
+// ====== AI GENERATION ======
+async function handleGenerateAI(){
+  const body = {
+    bases: Array.from(state.bases),
+    style: state.style,
+    sweetness: state.sweetness,
+    effort: state.effort
+  };
+  try {
+    const res = await fetch(AI_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!res.ok) throw new Error('Bad response');
+    const data = await res.json();
+    const r = normalizeAiRecipe(data);
+    state.lastPool = [r];
+    state.lastPick = r;
+    const resultEl = document.getElementById('result');
+    resultEl.innerHTML = recipeCard(r);
+    resultEl.classList.remove('hidden');
+    document.getElementById('noResult').classList.add('hidden');
+    regenBtn.disabled = true;
+    attachRecipeCardHandlers(r);
+  } catch (e) {
+    console.error(e);
+    toast('AI generation failed. Check endpoint.');
+  }
+}
+
+function normalizeAiRecipe(d){
+  const safe = (v, def) => (v==null?def:v);
+  const toPairs = (arr) => Array.isArray(arr) ? arr.map(x => Array.isArray(x)?x:[x.amount||'', x.item||'']) : [];
+  return {
+    name: safe(d.name, 'Custom Cocktail'),
+    id: slugify(safe(d.name, 'custom-cocktail')),
+    base: (d.base||[]).map(b=>String(b).toLowerCase()),
+    profile: d.profile||[],
+    sweetness: d.sweetness||'balanced',
+    ingredients: toPairs(d.ingredients),
+    method: safe(d.method, 'Build over ice.'),
+    glass: safe(d.glass, 'Rocks'),
+    garnish: d.garnish||'',
+    tags: d.tags||['ai']
+  };
+}
+
 function matchesCriteria(r){
-  // Base spirits: if 1 chosen, must include; if 2 chosen, must include both (normalized)
+  // Base spirits
   const chosen = Array.from(state.bases);
   if (chosen.length){
     const rbases = r.base.map(normBase);
@@ -943,7 +330,7 @@ function matchesCriteria(r){
   }
   // Style
   if (state.style !== 'any' && !(r.profile||[]).includes(state.style)) return false;
-  // Sweetness (rough heuristic by provided bucket)
+  // Sweetness
   if (state.sweetness !== 'any' && r.sweetness !== state.sweetness) return false;
   // Effort by ingredient count
   const n = r.ingredients.length;
@@ -955,7 +342,7 @@ function matchesCriteria(r){
 }
 
 function filterPool(){
-  const pool = RECIPES.filter(matchesCriteria);
+  const pool = (window.RECIPES || []).filter(matchesCriteria);
   return pool;
 }
 
@@ -978,7 +365,7 @@ function pickAndRender(pool){
   if (!pool.length){
     // Near misses: match only by base(s)
     const chosen = Array.from(state.bases);
-    const near = RECIPES.filter(r => {
+    const near = (window.RECIPES || []).filter(r => {
       if (!chosen.length) return false;
       const rbases = r.base.map(normBase);
       return chosen.map(normBase).every(b => rbases.includes(b));
@@ -1005,14 +392,14 @@ function smallCard(r){
       <h4 class="font-semibold">${r.name}</h4>
       <button data-open="${r.id}" class="text-violet-600 underline">Open</button>
     </div>
-    <div class="mt-1 text-xs text-gray-600">${r.profile.map(tagPill).join('')}</div>
+    <div class="mt-1 text-xs text-gray-600">${(r.profile||[]).map(tagPill).join('')}</div>
   </div>`
 }
 
 function recipeCard(r){
-  const ingList = r.ingredients.map(([amt,item]) => `<li><span class="font-medium">${amt}</span> ${item}</li>`).join('');
-  const base = r.base.map(b => titleCase(normBase(b))).filter((v,i,a)=>a.indexOf(v)===i).join(' + ');
-  const n = r.ingredients.length;
+  const ingList = (r.ingredients||[]).map(([amt,item]) => `<li><span class="font-medium">${amt}</span> ${item}</li>`).join('');
+  const base = (r.base||[]).map(b => titleCase(normBase(b))).filter((v,i,a)=>a.indexOf(v)===i).join(' + ');
+  const n = (r.ingredients||[]).length;
   const effort = n<=4?'quick':(n>=7?'fancy':'standard');
   const fav = isFavorite(r.id);
   return `
@@ -1020,7 +407,7 @@ function recipeCard(r){
     <div class="flex items-start justify-between gap-4">
       <div>
         <h2 class="text-2xl font-extrabold">${r.name}</h2>
-        <p class="text-sm text-gray-600">${base} • ${titleCase(r.profile[0]||'')} • ${titleCase(r.sweetness)} • ${titleCase(effort)}</p>
+        <p class="text-sm text-gray-600">${base} • ${titleCase((r.profile||[])[0]||'')} • ${titleCase(r.sweetness||'balanced')} • ${titleCase(effort)}</p>
       </div>
       <div class="flex items-center gap-2">
         <button class="btn btn-ghost" id="shareBtn">Share</button>
@@ -1036,8 +423,8 @@ function recipeCard(r){
       </div>
       <div class="card p-4">
         <h3 class="font-bold mb-2">Details</h3>
-        <p><span class="font-semibold">Method:</span> ${r.method}</p>
-        <p><span class="font-semibold">Glass:</span> ${r.glass}</p>
+        <p><span class="font-semibold">Method:</span> ${r.method||''}</p>
+        <p><span class="font-semibold">Glass:</span> ${r.glass||''}</p>
         ${r.garnish?`<p><span class="font-semibold">Garnish:</span> ${r.garnish}</p>`:''}
         <div class="mt-2">${(r.tags||[]).map(t => `<span class="chip">${t}</span>`).join('')}</div>
       </div>
@@ -1055,10 +442,10 @@ function attachRecipeCardHandlers(r){
       `${r.name}`,
       '',
       'Ingredients:',
-      ...r.ingredients.map(([a,i]) => `• ${a} ${i}`),
+      ...(r.ingredients||[]).map(([a,i]) => `• ${a} ${i}`),
       '',
-      `Method: ${r.method}`,
-      `Glass: ${r.glass}`,
+      `Method: ${r.method||''}`,
+      `Glass: ${r.glass||''}`,
       r.garnish?`Garnish: ${r.garnish}`:''
     ].filter(Boolean).join('\n');
     navigator.clipboard.writeText(lines).then(()=>{
@@ -1068,22 +455,20 @@ function attachRecipeCardHandlers(r){
 
   favBtn?.addEventListener('click', () => {
     toggleFavorite(r.id);
-    // re-render button
     document.getElementById('result').innerHTML = recipeCard(r);
     attachRecipeCardHandlers(r);
     renderFavorites();
   });
 
   shareBtn?.addEventListener('click', () => {
-    // Share current URL (contains criteria), plus anchor to recipe id
     const url = location.href.split('#')[0] + '#' + r.id;
     navigator.clipboard.writeText(url).then(()=> toast('Shareable link copied'));
   });
 }
 
-/***********************\
+/***********************
 *  FAVORITES (local)    *
-\***********************/
+***********************/
 const FAV_KEY = 'cocktail-favorites-v1';
 function getFavorites(){
   try { return JSON.parse(localStorage.getItem(FAV_KEY)||'[]'); } catch { return []; }
@@ -1098,14 +483,14 @@ function renderFavorites(){
   const wrap = document.getElementById('favoritesList');
   const favs = getFavorites();
   if (!wrap) return;
-  const list = RECIPES.filter(r => favs.includes(r.id));
+  const list = (window.RECIPES || []).filter(r => favs.includes(r.id));
   wrap.innerHTML = list.length ? list.map(r => `
     <div class="card p-3">
       <div class="flex items-center justify-between">
         <h4 class="font-semibold">${r.name}</h4>
         <button class="text-rose-600 underline" data-remove="${r.id}">Remove</button>
       </div>
-      <div class="mt-2 text-xs text-gray-600">${r.base.map(b=>titleCase(normBase(b))).join(' + ')} • ${r.profile.join(', ')}</div>
+      <div class="mt-2 text-xs text-gray-600">${(r.base||[]).map(b=>titleCase(normBase(b))).join(' + ')} • ${(r.profile||[]).join(', ')}</div>
       <div class="mt-2"><button class="btn btn-ghost" data-open="${r.id}">Open</button></div>
     </div>`).join('') : '<p class="text-sm text-gray-500">No favorites yet. Mark recipes with ☆ Favorite.</p>';
 
@@ -1115,7 +500,7 @@ function renderFavorites(){
   }));
   wrap.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', e => {
     const id = e.target.getAttribute('data-open');
-    const r = RECIPES.find(r => r.id === id);
+    const r = (window.RECIPES || []).find(r => r.id === id);
     if (r){
       document.getElementById('result').innerHTML = recipeCard(r);
       document.getElementById('result').classList.remove('hidden');
@@ -1155,9 +540,9 @@ importFavsInput?.addEventListener('change', (e) => {
   reader.readAsText(f);
 });
 
-/***********************\
+/***********************
 *  MISC UI UTILITIES    *
-\***********************/
+***********************/
 function resetAll(){
   document.querySelectorAll('#baseSpirits input[type=checkbox]').forEach(cb => cb.checked = false);
   state.bases.clear();
@@ -1179,17 +564,15 @@ function toast(msg){
   setTimeout(() => t.remove(), 1800);
 }
 
-/***********************\
+/***********************
 *  KEYBOARD A11Y        *
-\***********************/
+***********************/
 window.addEventListener('keydown', (e) => {
-  // r to regenerate
   if (e.key.toLowerCase() === 'r' && !e.metaKey && !e.ctrlKey){
     e.preventDefault();
     if (!regenBtn.disabled) handleRegenerate();
   }
 });
-
 </script>
 </body>
 </html>
