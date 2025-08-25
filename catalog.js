@@ -669,7 +669,7 @@
       glass: 'Rocks',
       garnish: 'Orange peel',
       tags: ['stirred']
-    }
+    },
     {
   name: 'Nordic Boulevardier',
   id: 'nordic-boulevardier',
