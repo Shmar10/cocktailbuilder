@@ -806,6 +806,148 @@
   glass: 'Coupe',
   garnish: 'Cucumber slice or lemon wheel',
   tags: ['shaken', 'bright']
+},
+    {
+  name: 'Double Barrel Old Fashioned',
+  id: 'double-barrel-old-fashioned',
+  base: ['bourbon', 'dark rum'],
+  profile: ['spirit-forward', 'smoky'],
+  sweetness: 'dry',
+  ingredients: [
+    ['1.5 oz', 'Bourbon'],
+    ['0.5 oz', 'Dark Rum'],
+    ['1 barspoon', 'Demerara syrup'],
+    ['2 dashes', 'Angostura bitters'],
+    ['1 dash', 'Orange bitters']
+  ],
+  method: 'Stir with ice, strain into rocks glass over large cube.',
+  glass: 'Rocks',
+  garnish: 'Orange peel',
+  tags: ['stirred', 'classic riff']
+},
+{
+  name: 'Southern Cross',
+  id: 'southern-cross',
+  base: ['rye', 'aged rum'],
+  profile: ['citrusy', 'bold'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['1 oz', 'Rye Whiskey'],
+    ['1 oz', 'Aged Rum'],
+    ['0.75 oz', 'Lemon juice'],
+    ['0.5 oz', 'Simple syrup'],
+    ['1 dash', 'Peychaud’s bitters']
+  ],
+  method: 'Shake with ice, strain into coupe.',
+  glass: 'Coupe',
+  garnish: 'Lemon twist',
+  tags: ['shaken', 'bold']
+},
+{
+  name: 'Colonial Flip',
+  id: 'colonial-flip',
+  base: ['bourbon', 'spiced rum'],
+  profile: ['rich', 'creamy'],
+  sweetness: 'sweet',
+  ingredients: [
+    ['1 oz', 'Bourbon'],
+    ['1 oz', 'Spiced Rum'],
+    ['1 oz', 'Simple syrup'],
+    ['1', 'Whole egg'],
+    ['1 dash', 'Nutmeg']
+  ],
+  method: 'Dry shake, then shake with ice. Strain into coupe.',
+  glass: 'Coupe',
+  garnish: 'Grated nutmeg',
+  tags: ['flip', 'rich']
+},
+{
+  name: 'Bourbon Rum Buck',
+  id: 'bourbon-rum-buck',
+  base: ['bourbon', 'white rum'],
+  profile: ['spicy', 'refreshing'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['1 oz', 'Bourbon'],
+    ['1 oz', 'White Rum'],
+    ['0.5 oz', 'Lime juice'],
+    ['4 oz', 'Ginger beer']
+  ],
+  method: 'Build in highball glass with ice, stir gently.',
+  glass: 'Highball',
+  garnish: 'Lime wedge',
+  tags: ['long drink', 'buck']
+},
+{
+  name: 'Caribbean Manhattan',
+  id: 'caribbean-manhattan',
+  base: ['rye', 'aged rum'],
+  profile: ['spirit-forward', 'aromatic'],
+  sweetness: 'dry',
+  ingredients: [
+    ['1 oz', 'Rye Whiskey'],
+    ['1 oz', 'Aged Rum'],
+    ['1 oz', 'Sweet Vermouth'],
+    ['2 dashes', 'Angostura bitters']
+  ],
+  method: 'Stir with ice and strain into coupe.',
+  glass: 'Coupe',
+  garnish: 'Brandied cherry',
+  tags: ['manhattan riff', 'stirred']
+},
+{
+  name: 'Molasses Sour',
+  id: 'molasses-sour',
+  base: ['bourbon', 'blackstrap rum'],
+  profile: ['tart', 'deep'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['1 oz', 'Bourbon'],
+    ['1 oz', 'Blackstrap Rum'],
+    ['0.75 oz', 'Lime juice'],
+    ['0.5 oz', 'Simple syrup'],
+    ['1 dash', 'Angostura bitters']
+  ],
+  method: 'Shake with ice and strain into rocks glass.',
+  glass: 'Rocks',
+  garnish: 'Lime wheel',
+  tags: ['sour', 'shaken']
+},
+{
+  name: 'Island Boulevardier',
+  id: 'island-boulevardier',
+  base: ['bourbon', 'dark rum'],
+  profile: ['bittersweet', 'complex'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['1 oz', 'Bourbon'],
+    ['0.5 oz', 'Dark Rum'],
+    ['0.75 oz', 'Campari'],
+    ['0.75 oz', 'Sweet Vermouth']
+  ],
+  method: 'Stir with ice and strain into rocks glass.',
+  glass: 'Rocks',
+  garnish: 'Orange twist',
+  tags: ['stirred', 'negroni riff']
+},
+{
+  name: 'Smuggler’s Gold',
+  id: 'smugglers-gold',
+  base: ['bourbon', 'spiced rum'],
+  profile: ['tropical', 'citrusy'],
+  sweetness: 'balanced',
+  ingredients: [
+    ['1 oz', 'Bourbon'],
+    ['1 oz', 'Spiced Rum'],
+    ['0.5 oz', 'Orange juice'],
+    ['0.5 oz', 'Lime juice'],
+    ['0.5 oz', 'Falernum'],
+    ['1 dash', 'Angostura bitters']
+  ],
+  method: 'Shake with ice and strain into tiki or rocks glass over fresh ice.',
+  glass: 'Tiki or Rocks',
+  garnish: 'Mint sprig and lime wheel',
+  tags: ['tiki', 'shaken']
 }
   ];
 })();
