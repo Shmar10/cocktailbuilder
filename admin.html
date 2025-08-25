@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin — Cocktail Catalog</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:1rem; padding:.5rem 1rem; font-weight:600; border:1px solid #e5e7eb; background:#fff; }
+    .btn-primary { background:#0ea5e9; color:#fff; border-color:#0ea5e9; }
+    .input, .select, textarea { width:100%; border:1px solid #e5e7eb; border-radius:.75rem; padding:.5rem .75rem; background:#fff; }
+    .card { border:1px solid #e5e7eb; border-radius:1rem; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 text-slate-800">
+  <div class="mx-auto max-w-3xl p-4">
+    <header class="flex items-center justify-between">
+      <h1 class="text-2xl font-extrabold">Admin — Cocktail Catalog</h1>
+      <a href="./" class="btn">← Back</a>
+    </header>
+
+    <!-- Client-side gate (real protection is on the API) -->
+    <section id="gate" class="card p-4 mt-4">
+      <h2 class="font-bold">Password</h2>
+      <p class="text-sm text-gray-600">Enter the admin password to edit recipes.</p>
+      <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+        <input id="pw" type="password" placeholder="Admin password" class="input" />
+        <button id="unlockBtn" class="btn btn-primary">Unlock</button>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">Real security is enforced by the serverless API.</p>
+    </section>
+
+    <section id="config" class="card p-4 mt-4 hidden">
+      <h2 class="font-bold">API URL</h2>
+      <p class="text-sm text-gray-600">Your Vercel URL (e.g., <code>https://your-app.vercel.app/api/save-recipe</code>).</p>
+      <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+        <input id="apiUrl" type="url" placeholder="https://<project>.vercel.app/api/save-recipe" class="input" />
+        <button id="saveApiUrl" class="btn">Save</button>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">Stored locally in this browser.</p>
+    </section>
+
+    <section id="formWrap" class="card p-4 mt-4 hidden">
+      <h2 class="font-bold">Add / Update a Recipe</h2>
+      <p class="text-sm text-gray-600">Fill the form OR paste free text. Using the same <b>Name</b> will update that recipe.</p>
+      <div class="grid gap-4">
+        <div>
+          <label class="font-semibold">Name</label>
+          <input id="name" class="input" placeholder="e.g., Kingston Sour" />
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="font-semibold">Base(s) (comma-separated)</label>
+            <input id="bases" class="input" placeholder="e.g., gin or rum, campari" />
+          </div>
+          <div>
+            <label class="font-semibold">Profile</label>
+            <select id="profile" class="select">
+              <option value="">(choose)</option>
+              <option>spirit-forward</option>
+              <option>citrusy</option>
+              <option>bubbly</option>
+              <option>tiki</option>
+              <option>bitter</option>
+              <option>dessert</option>
+              <option>herbal</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="font-semibold">Sweetness</label>
+            <select id="sweetness" class="select">
+              <option>dry</option>
+              <option selected>balanced</option>
+              <option>sweet</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-semibold">Glass</label>
+            <input id="glass" class="input" placeholder="Coupe, Rocks, Highball…" />
+          </div>
+        </div>
+        <div>
+          <label class="font-semibold">Ingredients (one per line)</label>
+          <textarea id="ingredients" rows="6" placeholder="2 oz Gin
+0.75 oz Lime juice
+0.5 oz Simple syrup
+2 dashes Angostura bitters"></textarea>
+        </div>
+        <div>
+          <label class="font-semibold">Method</label>
+          <textarea id="method" rows="3" placeholder="Shake with ice, fine strain into coupe."></textarea>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label class="font-semibold">Garnish (optional)</label>
+            <input id="garnish" class="input" placeholder="Lime wheel" />
+          </div>
+          <div>
+            <label class="font-semibold">Tags (comma-separated, optional)</label>
+            <input id="tags" class="input" placeholder="modern, shaken" />
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="submitBtn" class="btn btn-primary">Save Recipe</button>
+          <span id="status" class="text-sm text-gray-600"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card p-4 mt-4">
+      <h2 class="font-bold">Tips</h2>
+      <ul class="list-disc pl-6 text-sm text-gray-700 space-y-1">
+        <li>To update a recipe, re-use the same <b>Name</b>.</li>
+        <li>Ingredients parser understands: <code>2 oz Gin</code>, <code>1 tsp Syrup</code>, <code>Top Soda water</code>, <code>Rinse Absinthe</code>, <code>2 dashes Angostura</code>.</li>
+        <li>All custom recipes live in <code>custom-recipes.json</code> (committed to your repo by the API).</li>
+      </ul>
+    </section>
+  </div>
+
+<script>
+const gate = document.getElementById('gate');
+const config = document.getElementById('config');
+const formWrap = document.getElementById('formWrap');
+
+document.getElementById('unlockBtn').addEventListener('click', () => {
+  if (document.getElementById('pw').value.trim()) {
+    gate.classList.add('hidden'); config.classList.remove('hidden'); formWrap.classList.remove('hidden');
+  }
+});
+document.getElementById('saveApiUrl').addEventListener('click', () => {
+  localStorage.setItem('catalogApiUrl', document.getElementById('apiUrl').value.trim());
+  alert('Saved.');
+});
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const apiUrl = localStorage.getItem('catalogApiUrl') || document.getElementById('apiUrl').value.trim();
+  if (!apiUrl) return alert('Set your API URL first.');
+  const password = document.getElementById('pw').value.trim();
+  const name = document.getElementById('name').value.trim();
+  if (!name) return alert('Name is required.');
+
+  const bases = document.getElementById('bases').value.split(',').map(s => s.trim()).filter(Boolean);
+  const profile = document.getElementById('profile').value ? [document.getElementById('profile').value] : [];
+  const sweetness = document.getElementById('sweetness').value;
+  const glass = document.getElementById('glass').value.trim();
+  const ingredientsText = document.getElementById('ingredients').value.trim();
+  const method = document.getElementById('method').value.trim();
+  const garnish = document.getElementById('garnish').value.trim();
+  const tags = document.getElementById('tags').value.split(',').map(s => s.trim()).filter(Boolean);
+
+  const ingredients = parseIngredients(ingredientsText);
+  const payload = { password, recipe: { name, base:bases, profile, sweetness, ingredients, method, glass, garnish, tags } };
+
+  document.getElementById('status').textContent = 'Saving…';
+  try {
+    const r = await fetch(apiUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'save-failed');
+    document.getElementById('status').textContent = 'Saved ✔';
+    setTimeout(()=> document.getElementById('status').textContent = '', 1500);
+  } catch (e) {
+    console.error(e);
+    document.getElementById('status').textContent = 'Error saving.';
+  }
+});
+
+function parseIngredients(text){
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  return lines.map(line => {
+    const m = line.match(/^(Top|Rinse|Float|Dash(?:es)?|Pinch|Barspoon|\d+[\/\d\s\.]*\s*(?:oz|tsp|tbsp|ml|dash(?:es)?|barspoon))\s+(.*)$/i);
+    if (m) return [m[1], m[2]];
+    const i = line.indexOf(' ');
+    return i>0 ? [line.slice(0,i), line.slice(i+1)] : ['', line];
+  });
+}
+</script>
+</body>
+</html>
