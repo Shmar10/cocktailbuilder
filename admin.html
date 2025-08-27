@@ -2,414 +2,387 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin — Cocktail Catalog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Cocktail Admin</title>
+  <meta name="description" content="Admin: add and manage custom cocktail recipes." />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:1rem; padding:.5rem 1rem; font-weight:600; border:1px solid #e5e7eb; background:#fff; }
-    .btn-primary { background:#0ea5e9; color:#fff; border-color:#0ea5e9; }
-    .input, textarea, select { width:100%; border:1px solid #e5e7eb; border-radius:.75rem; padding:.5rem .75rem; background:#fff; }
+    .btn-primary { background:#6d28d9; color:#fff; border-color:#6d28d9; }
+    .btn-primary:hover { filter:brightness(.95); }
     .card { border:1px solid #e5e7eb; border-radius:1rem; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.04); }
-    .muted { color:#64748b; }
-    .tag { display:inline-block; font-size:.75rem; padding:.125rem .5rem; border:1px solid #e5e7eb; border-radius:999px; margin-right:.25rem; }
+    .input, .select, .textarea { width:100%; border:1px solid #e5e7eb; border-radius:.75rem; padding:.5rem .75rem; background:#fff; }
+    .textarea { min-height: 12rem; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .tag { display:inline-flex; align-items:center; border:1px solid #d1d5db; border-radius:9999px; padding:.125rem .5rem; font-size:.75rem; font-weight:600; margin-right:.25rem; margin-bottom:.25rem; background:#fff; color:#374151; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
   </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 text-slate-800">
-  <div class="mx-auto max-w-5xl p-4">
-    <header class="flex items-center justify-between">
-      <h1 class="text-2xl font-extrabold">Admin — Cocktail Catalog</h1>
-      <a href="./" class="btn">← Back</a>
-    </header>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-violet-50 text-slate-800">
+  <header class="sticky top-0 bg-white/80 backdrop-blur border-b">
+    <div class="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+      <h1 class="text-xl font-extrabold tracking-tight">🔧 Cocktail Admin</h1>
+      <nav class="flex items-center gap-2 text-sm">
+        <a class="btn" href="index.html">← Back to site</a>
+      </nav>
+    </div>
+  </header>
 
-    <!-- GATE: password only -->
-    <section id="gate" class="card p-4 mt-4">
-      <h2 class="font-bold">Enter Admin Password</h2>
-      <p class="text-sm muted">You’ll be asked once for your API URL after unlocking (saved in this browser).</p>
-      <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-        <input id="pw" type="password" placeholder="Admin password" class="input" autocomplete="current-password" />
+  <main class="mx-auto max-w-5xl px-4 py-6 grid gap-6">
+    <!-- LOCK SCREEN -->
+    <section id="lockScreen" class="card p-5">
+      <h2 class="text-lg font-bold">Admin sign in</h2>
+      <p class="text-sm text-gray-600 mt-1">Enter the admin password you configured on the Vercel function.</p>
+      <div class="grid gap-3 sm:grid-cols-[1fr_auto] mt-3">
+        <input id="pwd" type="password" class="input" placeholder="Admin password" autocomplete="current-password" />
         <button id="unlockBtn" class="btn btn-primary">Unlock</button>
       </div>
-      <p id="gateStatus" class="text-sm mt-2"></p>
+      <p id="lockMsg" class="text-sm mt-2 text-red-600 hidden"></p>
     </section>
 
-    <!-- MAIN: hidden until password validated -->
-    <section id="main" class="hidden">
-      <!-- Top bar -->
-      <div class="card p-4 mt-4">
+    <!-- ADMIN AREA (hidden until unlocked) -->
+    <section id="adminArea" class="grid gap-6 hidden">
+      <!-- Add / Paste -->
+      <section class="card p-5">
         <div class="flex items-center justify-between gap-3">
-          <div>
-            <h2 class="font-bold">Catalog Admin</h2>
-            <p class="text-sm muted">Paste objects, use the form, and search your full catalog.</p>
-          </div>
-          <div class="text-right">
-            <button id="changeApiBtn" class="btn">Change API URL</button>
-            <div class="text-xs muted mt-1" id="apiUrlDisplay"></div>
+          <h2 class="text-lg font-bold">Add recipes (paste object or array)</h2>
+          <div class="text-sm text-gray-500">
+            API status: <span id="apiStatus" class="mono">idle</span>
           </div>
         </div>
-      </div>
 
-      <!-- Paste objects -->
-      <div class="card p-4 mt-4">
-        <div class="flex items-center justify-between gap-3">
-          <h3 class="font-bold">Paste recipe object(s)</h3>
-          <button id="insertExample" class="btn">Insert example</button>
-        </div>
-        <p class="text-sm muted mt-1">
-          Paste a single object or an array — exactly like your <code>catalog.js</code> format (single quotes ok).
+        <p class="text-sm text-gray-600 mt-1">
+          Paste one recipe object or an array of recipe objects. JS-style is fine (single quotes, trailing commas).
+          Example:
         </p>
-        <textarea id="rawObj" rows="10" class="mt-3 input" placeholder="{ name: 'Old Fashioned', id: 'old-fashioned', base: ['bourbon','rye'], ... }"></textarea>
-        <div class="mt-3 flex items-center gap-2">
-          <button id="submitRawBtn" class="btn btn-primary">Save Pasted Object(s)</button>
-          <span id="statusRaw" class="text-sm muted"></span>
-        </div>
-        <pre id="exampleText" class="hidden">{ name: 'Kingston Sour', base: ['jamaican rum'], profile: ['citrusy'], sweetness: 'balanced', ingredients: [['2 oz','Jamaican rum'],['0.75 oz','Lime juice'],['0.5 oz','Simple syrup'],['1 dash','Angostura']], method: 'Shake with ice; fine strain into coupe.', glass: 'Coupe', garnish: 'Lime wheel', tags: ['modern','shaken'] }</pre>
-      </div>
+<pre class="mono text-xs bg-slate-50 border rounded-lg p-3 overflow-auto mt-2">// Single:
+{
+  name: 'Old Fashioned',
+  id: 'old-fashioned',
+  base: ['bourbon','rye'],
+  profile: ['spirit-forward','aromatic'],
+  sweetness: 'dry',
+  ingredients: [
+    ['2 oz','Bourbon or rye'],
+    ['1 tsp','Demerara syrup (2:1)'],
+    ['2 dashes','Angostura bitters']
+  ],
+  method: 'Stir with ice 20–30 sec. Strain over a large cube.',
+  glass: 'Rocks',
+  garnish: 'Expressed orange peel',
+  tags: ['classic','stirred']
+}
 
-      <!-- Structured form -->
-      <div class="card p-4 mt-4">
-        <h3 class="font-bold">Add / Update a Recipe (form)</h3>
-        <div class="grid gap-4">
-          <div>
-            <label class="font-semibold">Name</label>
-            <input id="name" class="input" placeholder="e.g., Kingston Sour" />
-          </div>
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label class="font-semibold">Base(s) (comma-separated)</label>
-              <input id="bases" class="input" placeholder="e.g., rum, jamaican rum" />
-            </div>
-            <div>
-              <label class="font-semibold">Profile</label>
-              <select id="profile" class="input">
-                <option value="">(choose)</option>
-                <option>spirit-forward</option>
-                <option>citrusy</option>
-                <option>bubbly</option>
-                <option>tiki</option>
-                <option>bitter</option>
-                <option>dessert</option>
-                <option>herbal</option>
-              </select>
-            </div>
-          </div>
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label class="font-semibold">Sweetness</label>
-              <select id="sweetness" class="input">
-                <option>dry</option>
-                <option selected>balanced</option>
-                <option>sweet</option>
-              </select>
-            </div>
-            <div>
-              <label class="font-semibold">Glass</label>
-              <input id="glass" class="input" placeholder="Coupe, Rocks, Highball…" />
-            </div>
-          </div>
-          <div>
-            <label class="font-semibold">Ingredients (one per line)</label>
-            <textarea id="ingredients" rows="6" class="input" placeholder="2 oz Gin
-0.75 oz Lime juice
-0.5 oz Simple syrup
-2 dashes Angostura bitters"></textarea>
-          </div>
-          <div>
-            <label class="font-semibold">Method</label>
-            <textarea id="method" rows="3" class="input" placeholder="Shake with ice, fine strain into coupe."></textarea>
-          </div>
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label class="font-semibold">Garnish (optional)</label>
-              <input id="garnish" class="input" placeholder="Lime wheel" />
-            </div>
-            <div>
-              <label class="font-semibold">Tags (comma-separated, optional)</label>
-              <input id="tags" class="input" placeholder="modern, shaken" />
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="submitFormBtn" class="btn btn-primary">Save Recipe</button>
-            <span id="statusForm" class="text-sm muted"></span>
-          </div>
-        </div>
-      </div>
+// Or an array: [ { ... }, { ... } ]</pre>
 
-      <!-- Search -->
-      <div class="card p-4 mt-4">
+        <textarea id="pasteBox" class="textarea mt-3" placeholder="Paste your object(s) here…"></textarea>
+
+        <div class="flex flex-wrap gap-2 mt-3">
+          <button id="validateBtn" class="btn">Validate</button>
+          <button id="saveBtn" class="btn btn-primary" disabled>Save</button>
+          <button id="clearBtn" class="btn">Clear</button>
+          <span id="saveMsg" class="text-sm text-gray-600"></span>
+        </div>
+
+        <details class="mt-4">
+          <summary class="cursor-pointer text-sm font-semibold">What formats are accepted?</summary>
+          <ul class="list-disc pl-6 text-sm text-gray-700 mt-2 space-y-1">
+            <li>Single object or array of objects.</li>
+            <li>Keys can be <code>name, id, base, profile, sweetness, ingredients, method, glass, garnish, tags</code>.</li>
+            <li><code>base</code>, <code>profile</code>, <code>tags</code> should be arrays; <code>ingredients</code> is an array of <code>[amount, item]</code> pairs.</li>
+            <li>If an <code>id</code> is missing, it’s derived from <code>name</code>.</li>
+          </ul>
+        </details>
+      </section>
+
+      <!-- Search & Browse existing -->
+      <section class="card p-5">
         <div class="flex items-center justify-between gap-3">
-          <h3 class="font-bold">Search Catalog</h3>
-          <div class="text-sm muted" id="counts"></div>
+          <h2 class="text-lg font-bold">Search & browse custom-recipes.json</h2>
+          <div class="text-sm text-gray-500"><span id="countLabel">0</span> recipes</div>
         </div>
-        <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-          <input id="searchBox" class="input" placeholder="type to search (e.g., pineapple, campari, coupe)…" />
+        <div class="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+          <input id="searchBox" class="input" placeholder="search name, base, ingredient, tag…" autocomplete="off" />
           <button id="refreshBtn" class="btn">Refresh</button>
+          <button id="exportBtn" class="btn">Export</button>
         </div>
-        <p class="text-xs muted mt-1">Searches name, ingredients, method, tags, and base. Shows <b>seed</b> + <b>custom</b> merged.</p>
-        <div id="results" class="mt-3 grid gap-2"></div>
-      </div>
+        <div id="results" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+      </section>
     </section>
-  </div>
+  </main>
 
-  <!-- Load seed catalog so we can search it (optional; safe if missing) -->
-  <script src="catalog.js"></script>
+  <footer class="mx-auto max-w-5xl px-4 py-8 text-center text-xs text-gray-500">
+    Admin panel — no tracking. Built with vanilla JS.
+  </footer>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  // ---- Elements
-  const gate = document.getElementById('gate');
-  const main = document.getElementById('main');
-  const unlockBtn = document.getElementById('unlockBtn');
-  const pwInput = document.getElementById('pw');
-  const gateStatus = document.getElementById('gateStatus');
+  <script>
+/** ====== CONFIG ====== **/
+const API_URL = '/api/save-recipes'; // change if your Vercel route is different
+const CUSTOM_FILE = 'custom-recipes.json';
 
-  const changeApiBtn = document.getElementById('changeApiBtn');
-  const apiUrlDisplay = document.getElementById('apiUrlDisplay');
+/** ====== UTIL ====== **/
+const $ = sel => document.querySelector(sel);
+const tag = t => `<span class="tag">${t}</span>`;
+const slugify = s => String(s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 
-  const rawTextarea = document.getElementById('rawObj');
-  const submitRawBtn = document.getElementById('submitRawBtn');
-  const statusRaw = document.getElementById('statusRaw');
-  const insertExampleBtn = document.getElementById('insertExample');
-  const exampleText = document.getElementById('exampleText');
-
-  const nameEl = document.getElementById('name');
-  const basesEl = document.getElementById('bases');
-  const profileEl = document.getElementById('profile');
-  const sweetnessEl = document.getElementById('sweetness');
-  const glassEl = document.getElementById('glass');
-  const ingredientsEl = document.getElementById('ingredients');
-  const methodEl = document.getElementById('method');
-  const garnishEl = document.getElementById('garnish');
-  const tagsEl = document.getElementById('tags');
-  const submitFormBtn = document.getElementById('submitFormBtn');
-  const statusForm = document.getElementById('statusForm');
-
-  const searchBox = document.getElementById('searchBox');
-  const results = document.getElementById('results');
-  const refreshBtn = document.getElementById('refreshBtn');
-  const counts = document.getElementById('counts');
-
-  // ---- Local storage helpers
-  const getApiUrl = () => localStorage.getItem('catalogApiUrl') || '';
-  const setApiUrl = (v) => { localStorage.setItem('catalogApiUrl', v); renderApiUrl(); };
-  const renderApiUrl = () => { apiUrlDisplay.textContent = getApiUrl() ? `API: ${getApiUrl()}` : 'API not set yet'; };
-
-  // ---- Data
-  let ADMIN_PW = '';
-  let ALL = [];    // merged seed + custom
-  let CUSTOM = []; // custom only (from file)
-
-  // ---- Utils
-  const slug = s => String(s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-
-  function ensureApiUrl() {
-    let url = getApiUrl();
-    if (!url) {
-      url = prompt('Enter your Vercel API URL (e.g., https://<project>.vercel.app/api/save-recipe)') || '';
-      url = url.trim();
-      if (!url) return null;
-      setApiUrl(url);
-    }
-    return url;
+/** Robust-ish parser that accepts JSON OR JS object/array literals.
+ *  1) Try JSON.parse
+ *  2) Fall back to Function(...) to evaluate as a literal (admin-only usage)
+ */
+function parsePasted(text){
+  const t = String(text || '').trim();
+  if (!t) throw new Error('Empty input');
+  // Try JSON first
+  try { return JSON.parse(t); } catch {}
+  // Try JS literal (wrap in parentheses to allow bare objects)
+  try {
+    // eslint-disable-next-line no-new-func
+    const val = Function('"use strict"; return (' + t + ')')();
+    return val;
+  } catch (e) {
+    throw new Error('Could not parse input as JSON or JS literal. ' + e.message);
   }
+}
 
-  async function loadCustom() {
-    try {
-      const r = await fetch('custom-recipes.json', { cache: 'no-store' });
-      if (!r.ok) return [];
-      const j = await r.json();
-      return Array.isArray(j) ? j : [];
-    } catch { return []; }
-  }
+function normalizeRecipe(r){
+  if (!r || typeof r !== 'object') return null;
+  const name = r.name || '';
+  if (!name) return null;
+  const out = {
+    id: r.id || slugify(name),
+    name,
+    base: Array.isArray(r.base) ? r.base.map(x => String(x).toLowerCase()) : [],
+    profile: Array.isArray(r.profile) ? r.profile : (r.profile ? [r.profile] : []),
+    sweetness: r.sweetness || 'balanced',
+    ingredients: Array.isArray(r.ingredients) ? r.ingredients.map(p => Array.isArray(p) ? p : [p.amount||'', p.item||'']) : [],
+    method: r.method || '',
+    glass: r.glass || '',
+    garnish: r.garnish || '',
+    tags: Array.isArray(r.tags) ? r.tags : (r.tags ? [r.tags] : [])
+  };
+  return out;
+}
 
-  function mergeSeedAndCustom() {
-    const seed = Array.isArray(window.RECIPES) ? window.RECIPES : [];
-    const map = new Map();
-    [...seed, ...CUSTOM].forEach(r => {
-      const id = r.id || slug(r.name);
-      map.set(id, { ...r, id });
-    });
-    ALL = Array.from(map.values()).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
-    counts.textContent = `${ALL.length} total (${seed.length} seed + ${CUSTOM.length} custom)`;
-  }
+function show(el){ el.classList.remove('hidden'); }
+function hide(el){ el.classList.add('hidden'); }
 
-  function renderResults(list) {
-    results.innerHTML = '';
-    if (!list.length) { results.innerHTML = '<p class="text-sm muted">No matches.</p>'; return; }
-    list.forEach(r => {
-      const ing = (r.ingredients||[]).map(pair => Array.isArray(pair) ? pair.join(' ') : '').join(' • ');
-      const el = document.createElement('div');
-      el.className = 'p-3 border rounded-lg bg-white';
-      el.innerHTML = `
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="font-semibold">${r.name}</div>
-            <div class="text-xs muted">${(r.base||[]).join(', ')}</div>
-          </div>
-          <div class="text-xs">${(r.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
-        </div>
-        <div class="text-sm mt-1">${ing}</div>
-        ${r.method ? `<div class="text-xs muted mt-1"><b>Method:</b> ${r.method}</div>` : ''}
-      `;
-      results.appendChild(el);
-    });
-  }
+/** ====== LOCK / UNLOCK ====== **/
+const lockScreen = $('#lockScreen');
+const adminArea = $('#adminArea');
+const pwdInput = $('#pwd');
+const unlockBtn = $('#unlockBtn');
+const lockMsg = $('#lockMsg');
 
-  function doSearch(q) {
-    const s = q.toLowerCase().trim();
-    if (!s) { renderResults(ALL); return; }
-    const hit = (txt) => String(txt||'').toLowerCase().includes(s);
-    const filtered = ALL.filter(r => {
-      if (hit(r.name)) return true;
-      if ((r.base||[]).some(hit)) return true;
-      if ((r.tags||[]).some(hit)) return true;
-      if (hit(r.method)) return true;
-      if ((r.ingredients||[]).some(([a,i]) => hit(a) || hit(i))) return true;
-      return false;
-    });
-    renderResults(filtered);
-  }
+function hasSession(){
+  return sessionStorage.getItem('ADMIN_UNLOCK') === '1' &&
+         !!sessionStorage.getItem('ADMIN_PASSWORD');
+}
+function setSession(pwd){
+  sessionStorage.setItem('ADMIN_UNLOCK','1');
+  sessionStorage.setItem('ADMIN_PASSWORD', pwd);
+}
+function clearSession(){
+  sessionStorage.removeItem('ADMIN_UNLOCK');
+  sessionStorage.removeItem('ADMIN_PASSWORD');
+}
 
-  // ---- UI wiring
-  renderApiUrl();
-
-  changeApiBtn.addEventListener('click', () => {
-    const current = getApiUrl();
-    const next = prompt('Update API URL', current || 'https://<project>.vercel.app/api/save-recipe');
-    if (next !== null) setApiUrl((next || '').trim());
-  });
-
-  // Unlock => check password by posting empty recipes array
-  document.getElementById('unlockBtn').addEventListener('click', async () => {
-    gateStatus.textContent = '';
-    const password = pwInput.value.trim();
-    if (!password) { gateStatus.textContent = 'Please enter a password.'; return; }
-    const apiUrl = ensureApiUrl();
-    if (!apiUrl) { gateStatus.textContent = 'API URL is required.'; return; }
-
-    gateStatus.textContent = 'Checking password…';
-    try {
-      const r = await fetch(apiUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password, recipes: [] }) });
-      const j = await r.json().catch(()=> ({}));
-      if (r.status === 401) { gateStatus.textContent = 'Incorrect password.'; return; }
-      if (r.status !== 400 && !r.ok) { gateStatus.textContent = `API error: ${j.error || r.status}`; return; }
-      // Success
-      ADMIN_PW = password;
-      localStorage.setItem('catalogAdminPw', password);
-      gate.classList.add('hidden');
-      main.classList.remove('hidden');
-
-      // Load lists for search
-      CUSTOM = await loadCustom();
-      mergeSeedAndCustom();
-      renderResults(ALL);
-    } catch (e) {
-      console.error(e);
-      gateStatus.textContent = 'Network error — check your API URL.';
-    }
-  });
-
-  // Insert example into paste area
-  insertExampleBtn.addEventListener('click', () => {
-    rawTextarea.value = exampleText.textContent.trim();
-    rawTextarea.focus();
-  });
-
-  // Save pasted object(s)
-  submitRawBtn.addEventListener('click', async () => {
-    const apiUrl = getApiUrl();
-    const password = ADMIN_PW || localStorage.getItem('catalogAdminPw') || '';
-    if (!apiUrl) { alert('API URL missing — click “Change API URL” to set it.'); return; }
-    if (!password) { alert('Password missing — reload and unlock again.'); return; }
-
-    const raw = rawTextarea.value.trim();
-    if (!raw) { alert('Paste a recipe object or an array of objects.'); return; }
-
-    let parsed;
-    try {
-      // Allow JS-like objects: single quotes, trailing commas, unquoted keys.
-      parsed = (new Function('return (' + raw + ')'))();
-    } catch (e) {
-      console.error('Parse error', e);
-      statusRaw.textContent = 'Parse error — check your object syntax.';
-      return;
-    }
-
-    const items = Array.isArray(parsed) ? parsed : [parsed];
-    statusRaw.textContent = 'Saving…';
-    try {
-      const r = await fetch(apiUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password, recipes: items }) });
-      const j = await r.json().catch(()=> ({}));
-      if (!r.ok) throw new Error(j.error || 'save-failed');
-      statusRaw.textContent = `Saved ✔ (${j.count || items.length} recipe${(j.count||items.length)===1?'':'s'})`;
-      // Refresh lists
-      CUSTOM = await loadCustom();
-      mergeSeedAndCustom();
-      doSearch(searchBox.value);
-      setTimeout(()=> statusRaw.textContent = '', 2000);
-    } catch (e) {
-      console.error(e);
-      statusRaw.textContent = 'Error saving — see console.';
-    }
-  });
-
-  // Parse ingredients lines (form)
-  function parseIngredients(text){
-    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    return lines.map(line => {
-      const m = line.match(/^(Top|Rinse|Float|Dash(?:es)?|Pinch|Barspoon|\d+[\/\d\s\.]*\s*(?:oz|tsp|tbsp|ml|dash(?:es)?|barspoon))\s+(.*)$/i);
-      if (m) return [m[1], m[2]];
-      const i = line.indexOf(' ');
-      return i>0 ? [line.slice(0,i), line.slice(i+1)] : ['', line];
-    });
-  }
-
-  // Save form recipe
-  submitFormBtn.addEventListener('click', async () => {
-    const apiUrl = getApiUrl();
-    const password = ADMIN_PW || localStorage.getItem('catalogAdminPw') || '';
-    if (!apiUrl) { alert('API URL missing — click “Change API URL” to set it.'); return; }
-    if (!password) { alert('Password missing — reload and unlock again.'); return; }
-
-    const name = nameEl.value.trim();
-    if (!name) { statusForm.textContent = 'Name is required.'; return; }
-    const bases = basesEl.value.split(',').map(s => s.trim()).filter(Boolean);
-    const profile = profileEl.value ? [profileEl.value] : [];
-    const sweetness = sweetnessEl.value;
-    const glass = glassEl.value.trim();
-    const ingredients = parseIngredients(ingredientsEl.value.trim());
-    const method = methodEl.value.trim();
-    const garnish = garnishEl.value.trim();
-    const tags = tagsEl.value.split(',').map(s => s.trim()).filter(Boolean);
-
-    statusForm.textContent = 'Saving…';
-    try {
-      const r = await fetch(apiUrl, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ password, recipe: { name, base:bases, profile, sweetness, ingredients, method, glass, garnish, tags } })
-      });
-      const j = await r.json().catch(()=> ({}));
-      if (!r.ok) throw new Error(j.error || 'save-failed');
-      statusForm.textContent = 'Saved ✔';
-      setTimeout(()=> statusForm.textContent = '', 1500);
-      // clear minimal fields if you like:
-      // nameEl.value = ''; ingredientsEl.value = ''; ...
-      CUSTOM = await loadCustom();
-      mergeSeedAndCustom();
-      doSearch(searchBox.value);
-    } catch(e) {
-      console.error(e);
-      statusForm.textContent = 'Error saving — see console.';
-    }
-  });
-
-  // Search wiring
-  searchBox.addEventListener('input', () => doSearch(searchBox.value));
-  refreshBtn.addEventListener('click', async () => {
-    CUSTOM = await loadCustom();
-    mergeSeedAndCustom();
-    doSearch(searchBox.value);
-  });
+unlockBtn.addEventListener('click', () => {
+  const pwd = pwdInput.value.trim();
+  if (!pwd){ lockMsg.textContent = 'Please enter a password.'; lockMsg.classList.remove('hidden'); return; }
+  lockMsg.classList.add('hidden');
+  setSession(pwd);
+  hide(lockScreen);
+  show(adminArea);
+  loadCustom();
 });
-</script>
+if (hasSession()){
+  hide(lockScreen); show(adminArea);
+  loadCustom();
+}
+
+/** ====== ADD / SAVE ====== **/
+const pasteBox = $('#pasteBox');
+const validateBtn = $('#validateBtn');
+const saveBtn = $('#saveBtn');
+const clearBtn = $('#clearBtn');
+const saveMsg = $('#saveMsg');
+const apiStatus = $('#apiStatus');
+
+let validated = []; // holds normalized recipes ready to save
+
+validateBtn.addEventListener('click', () => {
+  try {
+    const raw = parsePasted(pasteBox.value);
+    const list = Array.isArray(raw) ? raw : [raw];
+    const normalized = list.map(normalizeRecipe).filter(Boolean);
+
+    if (!normalized.length) throw new Error('No valid recipes found.');
+    validated = normalized;
+
+    saveMsg.textContent = `Validated ${validated.length} recipe${validated.length===1?'':'s'}.`;
+    saveMsg.classList.remove('text-red-600');
+    saveBtn.disabled = false;
+  } catch (e) {
+    validated = [];
+    saveBtn.disabled = true;
+    saveMsg.textContent = e.message || 'Validation failed.';
+    saveMsg.classList.add('text-red-600');
+  }
+});
+
+clearBtn.addEventListener('click', () => {
+  pasteBox.value = '';
+  validated = [];
+  saveBtn.disabled = true;
+  saveMsg.textContent = '';
+});
+
+async function postOne(recipe, password){
+  const body = { password, recipe };
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok){
+    const txt = await res.text().catch(()=> '');
+    throw new Error(`API error (${res.status}): ${txt || 'request failed'}`);
+  }
+  return res.json();
+}
+
+saveBtn.addEventListener('click', async () => {
+  if (!validated.length) return;
+  const password = sessionStorage.getItem('ADMIN_PASSWORD') || '';
+  if (!password){ clearSession(); location.reload(); return; }
+
+  apiStatus.textContent = 'saving…';
+  saveBtn.disabled = true;
+
+  let ok = 0, fail = 0, errors = [];
+  for (const r of validated){
+    try {
+      // one-by-one upsert (server upserts by id)
+      await postOne(r, password);
+      ok++;
+    } catch (e) {
+      fail++;
+      errors.push(`${r.name}: ${e.message}`);
+    }
+  }
+
+  apiStatus.textContent = 'idle';
+  if (fail === 0){
+    saveMsg.textContent = `Saved ${ok} recipe${ok===1?'':'s'} ✔`;
+    saveMsg.classList.remove('text-red-600');
+    // Refresh list view
+    await loadCustom();
+  } else {
+    saveMsg.textContent = `Saved ${ok}, failed ${fail}. See console for details.`;
+    saveMsg.classList.add('text-red-600');
+    console.error('Save errors:', errors);
+  }
+});
+
+/** ====== SEARCH & BROWSE ====== **/
+const searchBox = $('#searchBox');
+const refreshBtn = $('#refreshBtn');
+const exportBtn = $('#exportBtn');
+const results = $('#results');
+const countLabel = $('#countLabel');
+
+let CUSTOM_CACHE = [];
+
+async function fetchCustom(){
+  try {
+    const r = await fetch(CUSTOM_FILE, { cache: 'no-store' });
+    if (!r.ok) return [];
+    const j = await r.json();
+    return Array.isArray(j) ? j : [];
+  } catch {
+    return [];
+  }
+}
+
+async function loadCustom(){
+  CUSTOM_CACHE = await fetchCustom();
+  countLabel.textContent = CUSTOM_CACHE.length;
+  renderList(CUSTOM_CACHE);
+}
+
+function searchHits(r, q) {
+  const s = q.toLowerCase().trim();
+  if (!s) return true;
+  const hit = (txt) => String(txt||'').toLowerCase().includes(s);
+  if (hit(r.name)) return true;
+  if ((r.base||[]).some(hit)) return true;
+  if ((r.tags||[]).some(hit)) return true;
+  if (hit(r.method)) return true;
+  if ((r.ingredients||[]).some(([a,i]) => hit(a) || hit(i))) return true;
+  return false;
+}
+
+function renderList(list){
+  results.innerHTML = '';
+  if (!list.length){
+    results.innerHTML = '<p class="text-sm text-gray-500">No recipes found.</p>';
+    return;
+  }
+  list.slice(0, 120).forEach(r => {
+    const ing = (r.ingredients||[]).map(([a,i]) => `<li><b>${a}</b> ${i}</li>`).join('');
+    const card = document.createElement('div');
+    card.className = 'card p-3';
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h4 class="font-semibold">${r.name}</h4>
+          <div class="text-xs text-gray-600 mt-1">
+            ${(r.base||[]).join(', ')}
+            ${(r.tags||[]).length ? ' • ' + (r.tags||[]).map(t=>`<span class="tag">${t}</span>`).join(' ') : ''}
+          </div>
+        </div>
+        <button class="btn" data-copy="${r.id}">Copy JSON</button>
+      </div>
+      <details class="mt-2">
+        <summary class="cursor-pointer text-sm">Preview ingredients</summary>
+        <ul class="list-disc pl-6 text-sm mt-1">${ing}</ul>
+      </details>
+    `;
+    results.appendChild(card);
+  });
+
+  // Copy handlers
+  results.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', e => {
+    const id = e.currentTarget.getAttribute('data-copy');
+    const rec = CUSTOM_CACHE.find(x => (x.id || slugify(x.name)) === id);
+    if (!rec) return;
+    const txt = JSON.stringify(rec, null, 2);
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    e.currentTarget.textContent = 'Copied!';
+    setTimeout(() => e.currentTarget.textContent = 'Copy JSON', 1000);
+  }));
+}
+
+searchBox.addEventListener('input', () => {
+  const q = searchBox.value;
+  const filtered = CUSTOM_CACHE.filter(r => searchHits(r, q));
+  countLabel.textContent = filtered.length;
+  renderList(filtered);
+});
+
+refreshBtn.addEventListener('click', async () => {
+  refreshBtn.disabled = true;
+  await loadCustom();
+  refreshBtn.disabled = false;
+});
+
+exportBtn.addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(CUSTOM_CACHE, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'custom-recipes.json';
+  document.body.appendChild(a); a.click(); a.remove();
+});
+  </script>
 </body>
 </html>
