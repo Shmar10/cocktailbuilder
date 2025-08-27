@@ -7,16 +7,16 @@
   <meta name="description" content="Pick your base spirit(s) + preferences and get a cocktail recipe." />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* iOS notch safe area + bigger tap targets */
-    .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0); }
-    .tap-lg input[type="checkbox"] { width: 1.25rem; height: 1.25rem; }
+    /* Safe area + tap targets (mobile) */
+    .safe-bottom{padding-bottom:max(env(safe-area-inset-bottom),0)}
+    .tap-lg input[type="checkbox"]{width:1.25rem;height:1.25rem}
 
-    .btn { display:inline-flex; align-items:center; gap:.5rem; border-radius:1rem; padding:.5rem 1rem; font-weight:600; border:1px solid #e5e7eb; background:#fff; }
-    .btn-primary { background:#6d28d9; color:#fff; border-color:#6d28d9; }
-    .btn-primary:hover { filter:brightness(.95); }
-    .card { border:1px solid #e5e7eb; border-radius:1rem; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.04); }
-    .input, .select { width:100%; border:1px solid #e5e7eb; border-radius:.75rem; padding:.5rem .75rem; background:#fff; }
-    .tag { display:inline-flex; align-items:center; border:1px solid #d1d5db; border-radius:9999px; padding:.125rem .5rem; font-size:.75rem; font-weight:600; margin-right:.25rem; margin-bottom:.25rem; background:#fff; color:#374151; }
+    .btn{display:inline-flex;align-items:center;gap:.5rem;border-radius:1rem;padding:.5rem 1rem;font-weight:600;border:1px solid #e5e7eb;background:#fff}
+    .btn-primary{background:#6d28d9;color:#fff;border-color:#6d28d9}
+    .btn-primary:hover{filter:brightness(.95)}
+    .card{border:1px solid #e5e7eb;border-radius:1rem;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+    .input,.select{width:100%;border:1px solid #e5e7eb;border-radius:.75rem;padding:.5rem .75rem;background:#fff}
+    .tag{display:inline-flex;align-items:center;border:1px solid #d1d5db;border-radius:9999px;padding:.125rem .5rem;font-size:.75rem;font-weight:600;margin-right:.25rem;margin-bottom:.25rem;background:#fff;color:#374151}
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-50 to-violet-50 text-slate-800">
@@ -26,28 +26,23 @@
       <nav class="flex items-center gap-2 text-sm">
         <a class="btn" href="admin.html">Admin</a>
         <a class="btn" href="#how">How it works</a>
-        <button id="openFilters" class="btn lg:hidden">Filters</button>
+        <button id="openFilters" class="btn lg:hidden" type="button">Filters</button>
       </nav>
     </div>
   </header>
 
   <!-- Mobile Filters Drawer -->
   <div id="filtersDrawer" class="fixed inset-0 z-50 hidden">
-    <!-- backdrop -->
     <div class="absolute inset-0 bg-black/40" data-close></div>
-    <!-- sheet -->
     <div class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white shadow-2xl p-4 safe-bottom">
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-bold">Filters</h2>
-        <button class="btn" data-close>Close</button>
+        <button class="btn" type="button" data-close>Close</button>
       </div>
-
       <div class="grid gap-4 mt-3">
         <div>
           <label class="font-semibold">Base spirit (pick 1–2)</label>
-          <div id="baseSpiritsMobile" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 tap-lg">
-            <!-- JS will clone the same checkboxes here -->
-          </div>
+          <div id="baseSpiritsMobile" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 tap-lg"></div>
         </div>
         <div>
           <label class="font-semibold" for="styleMobile">Style</label>
@@ -83,8 +78,8 @@
           </div>
         </div>
         <div class="flex gap-2">
-          <button id="applyFilters" class="btn btn-primary flex-1">Apply</button>
-          <button id="clearFilters" class="btn">Clear</button>
+          <button id="applyFilters" class="btn btn-primary flex-1" type="button">Apply</button>
+          <button id="clearFilters" class="btn" type="button">Clear</button>
         </div>
       </div>
     </div>
@@ -98,9 +93,9 @@
         <div class="text-sm text-gray-500" id="searchCount"></div>
       </div>
       <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-        <input id="searchBox" class="input" placeholder="type to search (e.g., pineapple, mezcal, coupe)…" autocomplete="off" />
-        <button id="searchClear" class="btn">Clear</button>
-        <button id="searchExport" class="btn">Export results</button>
+        <input id="searchBox" class="input" placeholder="type to search (e.g., pineapple, mezcal, coupe)…" />
+        <button id="searchClear" class="btn" type="button">Clear</button>
+        <button id="searchExport" class="btn" type="button">Export results</button>
       </div>
       <p class="text-xs text-gray-500 mt-1">Searches name, ingredients, method, tags, and base. Click a result to open it.</p>
       <div id="searchResults" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
@@ -112,9 +107,7 @@
       <div class="grid gap-4">
         <div>
           <label class="font-semibold">Base spirit (pick 1–2)</label>
-          <div id="baseSpirits" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <!-- checkboxes injected by JS -->
-          </div>
+          <div id="baseSpirits" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3"></div>
         </div>
         <div>
           <label class="font-semibold" for="style">Style</label>
@@ -148,9 +141,9 @@
           </select>
         </div>
         <div class="flex flex-wrap gap-2 pt-1">
-          <button id="generateBtn" class="btn btn-primary">Generate</button>
-          <button id="regenBtn" class="btn" disabled>↻ Regenerate</button>
-          <button id="resetBtn" class="btn">Reset</button>
+          <button id="generateBtn" class="btn btn-primary" type="button">Generate</button>
+          <button id="regenBtn" class="btn" type="button" disabled>↻ Regenerate</button>
+          <button id="resetBtn" class="btn" type="button">Reset</button>
         </div>
       </div>
     </section>
@@ -166,7 +159,7 @@
 
       <!-- How it works -->
       <section id="how" class="card p-4">
-        <details class="lg:open">
+        <details>
           <summary class="cursor-pointer text-lg font-bold">How it works</summary>
           <ul class="list-disc pl-6 text-sm text-gray-700 mt-2 space-y-1">
             <li>Seed recipes live in <code>catalog.js</code>.</li>
@@ -180,8 +173,8 @@
       <section class="card p-4">
         <h2 class="text-lg font-bold mb-2">Maintenance</h2>
         <div class="flex flex-wrap gap-2">
-          <button id="exportCatalogBtn" class="btn">Export merged catalog.js</button>
-          <button id="refreshDataBtn" class="btn">Refresh data</button>
+          <button id="exportCatalogBtn" class="btn" type="button">Export merged catalog.js</button>
+          <button id="refreshDataBtn" class="btn" type="button">Refresh data</button>
           <span id="refreshStatus" class="text-sm text-gray-500"></span>
         </div>
       </section>
@@ -199,9 +192,9 @@
     <!-- Sticky action bar (mobile only) -->
     <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 border-t backdrop-blur safe-bottom px-4 py-3 lg:hidden">
       <div class="mx-auto max-w-5xl flex items-center gap-2">
-        <button id="generateBtnMobile" class="btn btn-primary flex-1">Generate</button>
-        <button id="regenBtnMobile" class="btn" disabled>↻</button>
-        <button id="resetBtnMobile" class="btn">Reset</button>
+        <button id="generateBtnMobile" class="btn btn-primary flex-1" type="button">Generate</button>
+        <button id="regenBtnMobile" class="btn" type="button" disabled>↻</button>
+        <button id="resetBtnMobile" class="btn" type="button">Reset</button>
       </div>
     </div>
   </main>
@@ -210,102 +203,119 @@
     No tracking. Built with vanilla JS.
   </footer>
 
-  <!-- Load the seed catalog -->
+  <!-- Seed catalog -->
   <script src="catalog.js"></script>
+
   <script>
-/** ---------- Helpers & Config ---------- **/
-const EXCLUDE_MODIFIERS = new Set([
+/* ================= Helpers & config ================= */
+var EXCLUDE_MODIFIERS = new Set([
   'aperol','campari','amaro','coffee liqueur','triple sec','curaçao',
   'chartreuse green','chartreuse yellow','vermouth sweet','vermouth dry','champagne','prosecco'
 ]);
 
-// Treat ANY rum/rhum variant as "rum"; roll "cognac" into "brandy".
-function normBase(b) {
-  const s = String(b).toLowerCase().trim();
-  if (s.includes('rhum agricole')) return 'rum';
-  if (s.includes('rum') || s.includes('rhum')) return 'rum';
+function normBase(b){
+  var s = String(b).toLowerCase().trim();
+  if (s.indexOf('rhum agricole') >= 0) return 'rum';
+  if (s.indexOf('rum') >= 0 || s.indexOf('rhum') >= 0) return 'rum';
   if (s === 'cognac') return 'brandy';
   return s;
 }
-const titleCase = s => String(s||'').replace(/\b\w/g, c => c.toUpperCase());
-const slugify = s => String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-const randomOf = arr => arr[Math.floor(Math.random()*arr.length)];
-const tag = t => `<span class="tag">${t}</span>`;
+function titleCase(s){ return String(s||'').replace(/\b\w/g, function(c){ return c.toUpperCase(); }); }
+function slugify(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+function randomOf(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function tag(t){ return '<span class="tag">'+t+'</span>'; }
 
-/** ---------- State ---------- **/
-const state = { bases:new Set(), style:'any', sweetness:'any', effort:'any', lastPool:[], lastPick:null };
+/* ================= State ================= */
+var state = { bases:new Set(), style:'any', sweetness:'any', effort:'any', lastPool:[], lastPick:null };
 
-/** ---------- Boot ---------- **/
-document.addEventListener('DOMContentLoaded', () => { boot().catch(console.error); });
+/* ================= Boot ================= */
+document.addEventListener('DOMContentLoaded', function(){ boot().catch(console.error); });
 
 async function boot(){
-  const seed = Array.isArray(window.RECIPES) ? window.RECIPES : [];
-  const custom = await fetchCustom();
-
-  // merge (custom overrides on same id)
-  const map = new Map();
-  [...seed, ...custom].forEach(r => { const id = r.id || slugify(r.name); map.set(id, { ...r, id }); });
-  window.ALL_RECIPES = Array.from(map.values()).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
-
-  buildBaseCheckboxes(window.ALL_RECIPES);
-  hydrateFromUrl();
-
-  document.getElementById('style').addEventListener('change', e => { state.style = e.target.value; syncUrl(); maybeRefreshMatches(); });
-  document.getElementById('sweetness').addEventListener('change', e => { state.sweetness = e.target.value; syncUrl(); maybeRefreshMatches(); });
-  document.getElementById('effort').addEventListener('change', e => { state.effort = e.target.value; syncUrl(); maybeRefreshMatches(); });
-
-  document.getElementById('generateBtn').addEventListener('click', handleGenerate);
-  document.getElementById('regenBtn').addEventListener('click', handleRegenerate);
-  document.getElementById('resetBtn').addEventListener('click', resetAll);
-
-  // Hydrate search from URL (after ALL_RECIPES is set)
-  setTimeout(hydrateSearchFromUrl, 0);
-
-  // mirror initial desktop selections into mobile selects
-  ['style','sweetness','effort'].forEach(k => {
-    const m = document.getElementById(k + 'Mobile');
-    const d = document.getElementById(k);
-    if (m && d) m.value = d.value;
+  // Merge seed + custom (custom overrides same id)
+  var seed = Array.isArray(window.RECIPES) ? window.RECIPES : [];
+  var custom = await fetchCustom();
+  var map = new Map();
+  seed.concat(custom).forEach(function(r){
+    var id = r.id || slugify(r.name);
+    map.set(id, Object.assign({}, r, { id:id }));
   });
+  window.ALL_RECIPES = Array.from(map.values()).sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+
+  // Build UI
+  buildBaseCheckboxes(window.ALL_RECIPES);
+  syncMobileBases();                  // clone checkboxes into drawer
+  hydrateFromUrl();                   // might tick some boxes
+  mirrorDesktopSelectsToMobile();     // copy initial values
+
+  // Wire desktop selects
+  onChange('style', function(v){ state.style=v; syncUrl(); maybeRefreshMatches(); });
+  onChange('sweetness', function(v){ state.sweetness=v; syncUrl(); maybeRefreshMatches(); });
+  onChange('effort', function(v){ state.effort=v; syncUrl(); maybeRefreshMatches(); });
+
+  // Desktop buttons
+  onClick('generateBtn', handleGenerate);
+  onClick('regenBtn', handleRegenerate);
+  onClick('resetBtn', function(){ resetAll(); syncMobileBases(); });
+
+  // Search wiring (after ALL_RECIPES exists)
+  hydrateSearchFromUrl();
+  var sb = document.getElementById('searchBox');
+  if (sb) sb.addEventListener('input', function(e){ doSearch(e.target.value); });
+  onClick('searchClear', function(){ document.getElementById('searchBox').value=''; doSearch(''); });
+  onClick('searchExport', exportSearchResults);
+
+  // Maintenance
+  onClick('refreshDataBtn', refreshData);
+  onClick('exportCatalogBtn', exportMergedCatalog);
+
+  // Mobile drawer + sticky bar
+  wireMobileUX();
 }
 
+/* ================= Fetch custom ================= */
 async function fetchCustom(){
-  try {
-    const r = await fetch('custom-recipes.json', { cache:'no-store' });
+  try{
+    var r = await fetch('custom-recipes.json', { cache:'no-store' });
     if (!r.ok) return [];
-    const j = await r.json();
+    var j = await r.json();
     return Array.isArray(j) ? j : [];
-  } catch { return []; }
+  }catch(_){ return []; }
 }
 
-/** ---------- UI ---------- **/
+/* ================= UI building ================= */
 function buildBaseCheckboxes(recipes){
-  const wrap = document.getElementById('baseSpirits');
+  var wrap = document.getElementById('baseSpirits');
   wrap.innerHTML = '';
-  const bases = new Set();
-  recipes.forEach(r => (r.base||[]).forEach(b => {
-    const nb = normBase(String(b).toLowerCase());
-    if (!EXCLUDE_MODIFIERS.has(nb)) bases.add(nb);
-  }));
-  Array.from(bases).sort().forEach(id => {
-    const idAttr = `base-${id.replace(/\s+/g,'-')}`;
-    const div = document.createElement('div');
-    div.innerHTML = `
-      <label class="flex items-center gap-2 border rounded-xl px-3 py-2 hover:bg-gray-50 cursor-pointer">
-        <input type="checkbox" id="${idAttr}" value="${id}" class="accent-violet-600">
-        <span>${titleCase(id)}</span>
-      </label>`;
+  var bases = new Set();
+  recipes.forEach(function(r){
+    (r.base||[]).forEach(function(b){
+      var nb = normBase(String(b).toLowerCase());
+      if (!EXCLUDE_MODIFIERS.has(nb)) bases.add(nb);
+    });
+  });
+  Array.from(bases).sort().forEach(function(id){
+    var idAttr = 'base-'+id.replace(/\s+/g,'-');
+    var div = document.createElement('div');
+    div.innerHTML =
+      '<label class="flex items-center gap-2 border rounded-xl px-3 py-2 hover:bg-gray-50 cursor-pointer">' +
+      '  <input type="checkbox" id="'+idAttr+'" value="'+id+'" class="accent-violet-600">' +
+      '  <span>'+titleCase(id)+'</span>' +
+      '</label>';
     wrap.appendChild(div);
-    div.querySelector('input').addEventListener('change', (e) => {
-      if (e.target.checked) {
-        if (state.bases.size >= 2) {
-          const [first] = state.bases;
-          document.getElementById(\`base-\${first.replace(/\s+/g,'-')}\`).checked = false;
+    div.querySelector('input').addEventListener('change', function(e){
+      var val = e.target.value;
+      if (e.target.checked){
+        if (state.bases.size >= 2){
+          var first = state.bases.values().next().value;
+          var firstId = 'base-'+first.replace(/\s+/g,'-');
+          var firstCb = document.getElementById(firstId);
+          if (firstCb) firstCb.checked = false;
           state.bases.delete(first);
         }
-        state.bases.add(e.target.value);
-      } else {
-        state.bases.delete(e.target.value);
+        state.bases.add(val);
+      }else{
+        state.bases.delete(val);
       }
       syncUrl();
       maybeRefreshMatches();
@@ -313,412 +323,368 @@ function buildBaseCheckboxes(recipes){
   });
 }
 
-/** ---------- URL sync ---------- **/
+/* ================= URL sync ================= */
 function hydrateFromUrl(){
-  const p = new URLSearchParams(location.search);
-  (p.get('bases')||'').split(',').filter(Boolean).slice(0,2).forEach(b => {
-    const cb = document.getElementById(\`base-\${b.replace(/\s+/g,'-')}\`);
+  var p = new URLSearchParams(location.search);
+  (p.get('bases')||'').split(',').filter(Boolean).slice(0,2).forEach(function(b){
+    var cb = document.getElementById('base-'+b.replace(/\s+/g,'-'));
     if (cb){ cb.checked = true; state.bases.add(b); }
   });
-  ['style','sweetness','effort'].forEach(k => { if (p.get(k)){ state[k] = p.get(k); document.getElementById(k).value = state[k]; } });
+  ['style','sweetness','effort'].forEach(function(k){
+    if (p.get(k)){ state[k] = p.get(k); var el = document.getElementById(k); if (el) el.value = state[k]; }
+  });
 }
 function syncUrl(){
-  const p = new URLSearchParams();
+  var p = new URLSearchParams();
   if (state.bases.size) p.set('bases', Array.from(state.bases).join(','));
-  ['style','sweetness','effort'].forEach(k => { if (state[k] !== 'any') p.set(k, state[k]); });
-  history.replaceState(null, '', location.pathname + (p.toString()?`?${p.toString()}`:''));
+  ['style','sweetness','effort'].forEach(function(k){ if (state[k] !== 'any') p.set(k, state[k]); });
+  history.replaceState(null, '', location.pathname + (p.toString() ? ('?'+p.toString()) : ''));
 }
 
-/** ---------- Filtering & Render ---------- **/
+/* ================= Filtering & Render ================= */
 function matchesCriteria(r){
-  const chosen = Array.from(state.bases);
+  var chosen = Array.from(state.bases);
   if (chosen.length){
-    const rbases = (r.base||[]).map(x => normBase(String(x).toLowerCase()));
-    if (!chosen.map(normBase).every(b => rbases.includes(b))) return false;
+    var rbases = (r.base||[]).map(function(x){ return normBase(String(x).toLowerCase()); });
+    var ok = chosen.map(normBase).every(function(b){ return rbases.indexOf(b) >= 0; });
+    if (!ok) return false;
   }
   if (state.style !== 'any' && !(r.profile||[]).includes(state.style)) return false;
   if (state.sweetness !== 'any' && r.sweetness !== state.sweetness) return false;
-  const n = (r.ingredients||[]).length;
-  const bucket = n<=4?'quick':(n>=7?'fancy':'standard');
+  var n = (r.ingredients||[]).length;
+  var bucket = n<=4 ? 'quick' : (n>=7 ? 'fancy' : 'standard');
   if (state.effort !== 'any' && state.effort !== bucket) return false;
   return true;
 }
 
 function handleGenerate(){
-  state.lastPool = window.ALL_RECIPES.filter(matchesCriteria);
-  renderCriteriaResults(state.lastPool);            // show grid of all matches
-  pickAndRender(state.lastPool);                    // feature one pick as before
+  state.lastPool = (window.ALL_RECIPES||[]).filter(matchesCriteria);
+  renderCriteriaResults(state.lastPool);
+  pickAndRender(state.lastPool);
 }
 function handleRegenerate(){
   if (!state.lastPool.length){ handleGenerate(); return; }
-  pickAndRender(state.lastPool.filter(r => !state.lastPick || r.id !== state.lastPick.id));
+  var pool = state.lastPool.filter(function(r){ return !state.lastPick || r.id !== state.lastPick.id; });
+  pickAndRender(pool);
 }
 
 function pickAndRender(pool){
-  const resultEl = document.getElementById('result');
-  const noResult = document.getElementById('noResult');
-  const nearWrap = document.getElementById('nearWrap');
+  var resultEl = document.getElementById('result');
+  var noResult = document.getElementById('noResult');
+  var nearWrap = document.getElementById('nearWrap');
 
   if (!pool.length){
-    // near matches by base only
-    const chosen = Array.from(state.bases);
-    const near = window.ALL_RECIPES.filter(r => {
+    var chosen = Array.from(state.bases);
+    var near = (window.ALL_RECIPES||[]).filter(function(r){
       if (!chosen.length) return false;
-      const rbases = (r.base||[]).map(x => normBase(String(x).toLowerCase()));
-      return chosen.map(normBase).every(b => rbases.includes(b));
+      var rbases = (r.base||[]).map(function(x){ return normBase(String(x).toLowerCase()); });
+      return chosen.map(normBase).every(function(b){ return rbases.indexOf(b) >= 0; });
     }).slice(0,4);
-    nearWrap.innerHTML = near.map(r => `<div class="card p-3">
-      <div class="flex items-center justify-between">
-        <h4 class="font-semibold">${r.name}</h4>
-        <button data-open="${r.id}" class="text-violet-600 underline">Open</button>
-      </div>
-      <div class="mt-1 text-xs text-gray-600">${(r.profile||[]).map(tag).join('')}</div>
-    </div>`).join('') || '<p class="text-sm text-gray-500">No near matches either—clear a filter.</p>';
+    nearWrap.innerHTML = near.map(function(r){
+      return '<div class="card p-3">' +
+             ' <div class="flex items-center justify-between">' +
+             '   <h4 class="font-semibold">'+r.name+'</h4>' +
+             '   <button data-open="'+r.id+'" class="text-violet-600 underline" type="button">Open</button>' +
+             ' </div>' +
+             ' <div class="mt-1 text-xs text-gray-600">'+((r.profile||[]).map(tag).join(''))+'</div>' +
+             '</div>';
+    }).join('') || '<p class="text-sm text-gray-500">No near matches either—clear a filter.</p>';
     resultEl.classList.add('hidden'); noResult.classList.remove('hidden');
     document.getElementById('regenBtn').disabled = true;
-    const mobRegen = document.getElementById('regenBtnMobile'); if (mobRegen) mobRegen.disabled = true;
-    renderCriteriaResults([]); // hide grid
+    document.getElementById('regenBtnMobile').setAttribute('disabled','');
+    renderCriteriaResults([]);
     wrapOpenHandlers();
     return;
   }
 
-  const pick = randomOf(pool); state.lastPick = pick;
+  var pick = randomOf(pool); state.lastPick = pick;
   resultEl.innerHTML = recipeCard(pick);
   resultEl.classList.remove('hidden'); noResult.classList.add('hidden');
-  document.getElementById('regenBtn').disabled = pool.length <= 1;
-  const mobRegen = document.getElementById('regenBtnMobile'); if (mobRegen) mobRegen.disabled = pool.length <= 1;
+  var enableRegen = pool.length > 1;
+  document.getElementById('regenBtn').disabled = !enableRegen;
+  var rbm = document.getElementById('regenBtnMobile'); if (rbm) rbm.disabled = !enableRegen;
   wrapOpenHandlers();
 }
 
 function wrapOpenHandlers(){
-  document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', e => {
-    const id = e.currentTarget.getAttribute('data-open');
-    const r = window.ALL_RECIPES.find(x => x.id === id);
-    if (r){
+  Array.prototype.forEach.call(document.querySelectorAll('[data-open]'), function(btn){
+    btn.addEventListener('click', function(e){
+      var id = e.currentTarget.getAttribute('data-open');
+      var r = (window.ALL_RECIPES||[]).find(function(x){ return x.id === id; });
+      if (!r) return;
       document.getElementById('result').innerHTML = recipeCard(r);
       document.getElementById('result').classList.remove('hidden');
       document.getElementById('noResult').classList.add('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }));
+    });
+  });
 }
 
 function recipeCard(r){
-  const ing = (r.ingredients||[]).map(([a,i]) => `<li><b>${a}</b> ${i}</li>`).join('');
-  const base = (r.base||[]).map(b => titleCase(normBase(String(b).toLowerCase()))).filter((v,i,a)=>a.indexOf(v)===i).join(' + ');
-  const n = (r.ingredients||[]).length;
-  const effort = n<=4?'quick':(n>=7?'fancy':'standard');
-  return `
-    <article>
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h2 class="text-2xl font-extrabold">${r.name}</h2>
-          <p class="text-sm text-gray-600">${base} • ${titleCase((r.profile||[])[0]||'')} • ${titleCase(r.sweetness||'balanced')} • ${titleCase(effort)}</p>
-        </div>
-        <button class="btn" id="copyBtn">Copy</button>
-      </div>
-      <div class="grid sm:grid-cols-3 gap-4 mt-4">
-        <div class="sm:col-span-2 card p-4">
-          <h3 class="font-bold mb-2">Ingredients</h3>
-          <ul class="list-disc pl-6">${ing}</ul>
-        </div>
-        <div class="card p-4">
-          <h3 class="font-bold mb-2">Details</h3>
-          <p><b>Method:</b> ${r.method||''}</p>
-          <p><b>Glass:</b> ${r.glass||''}</p>
-          ${r.garnish?`<p><b>Garnish:</b> ${r.garnish}</p>`:''}
-          <div class="mt-2">${(r.tags||[]).map(tag).join('')}</div>
-        </div>
-      </div>
-    </article>
-  `;
+  var ing = (r.ingredients||[]).map(function(p){ return '<li><b>'+p[0]+'</b> '+p[1]+'</li>'; }).join('');
+  var base = (r.base||[]).map(function(b){ return titleCase(normBase(String(b).toLowerCase())); })
+    .filter(function(v,i,a){ return a.indexOf(v)===i; }).join(' + ');
+  var n = (r.ingredients||[]).length;
+  var effort = n<=4?'quick':(n>=7?'fancy':'standard');
+  return ''+
+  '<article>'+
+  ' <div class="flex items-start justify-between gap-4">'+
+  '   <div>'+
+  '     <h2 class="text-2xl font-extrabold">'+r.name+'</h2>'+
+  '     <p class="text-sm text-gray-600">'+base+' • '+titleCase((r.profile||[])[0]||'')+' • '+titleCase(r.sweetness||'balanced')+' • '+titleCase(effort)+'</p>'+
+  '   </div>'+
+  '   <button class="btn" id="copyBtn" type="button">Copy</button>'+
+  ' </div>'+
+  ' <div class="grid sm:grid-cols-3 gap-4 mt-4">'+
+  '   <div class="sm:col-span-2 card p-4">'+
+  '     <h3 class="font-bold mb-2">Ingredients</h3>'+
+  '     <ul class="list-disc pl-6">'+ing+'</ul>'+
+  '   </div>'+
+  '   <div class="card p-4">'+
+  '     <h3 class="font-bold mb-2">Details</h3>'+
+  '     <p><b>Method:</b> '+(r.method||'')+'</p>'+
+  '     <p><b>Glass:</b> '+(r.glass||'')+'</p>'+
+  (r.garnish? '<p><b>Garnish:</b> '+r.garnish+'</p>' : '')+
+  '     <div class="mt-2">'+((r.tags||[]).map(tag).join(''))+'</div>'+
+  '   </div>'+
+  ' </div>'+
+  '</article>';
 }
 
-/** ---------- Reset ---------- **/
+/* ================= Reset ================= */
 function resetAll(){
-  document.querySelectorAll('#baseSpirits input[type=checkbox]').forEach(cb => cb.checked = false);
+  Array.prototype.forEach.call(document.querySelectorAll('#baseSpirits input[type=checkbox]'), function(cb){ cb.checked=false; });
   state.bases.clear(); state.style='any'; state.sweetness='any'; state.effort='any';
-  document.getElementById('style').value='any'; document.getElementById('sweetness').value='any'; document.getElementById('effort').value='any';
-  document.getElementById('result').classList.add('hidden'); document.getElementById('noResult').classList.add('hidden');
+  document.getElementById('style').value='any';
+  document.getElementById('sweetness').value='any';
+  document.getElementById('effort').value='any';
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('noResult').classList.add('hidden');
   document.getElementById('regenBtn').disabled = true;
-  document.getElementById('regenBtnMobile')?.setAttribute('disabled','');
-  renderCriteriaResults([]); // hide grid
+  var rbm = document.getElementById('regenBtnMobile'); if (rbm) rbm.setAttribute('disabled','');
+  renderCriteriaResults([]);
   syncUrl();
 }
 
-document.addEventListener('click', (e) => {
-  if (e.target && e.target.id === 'copyBtn') {
-    const el = document.createElement('textarea');
+document.addEventListener('click', function(e){
+  if (e.target && e.target.id === 'copyBtn'){
+    var el = document.createElement('textarea');
     el.value = document.getElementById('result').innerText;
     document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove();
   }
 });
 
-/** ---------- Search (name, base, ingredients, tags, method) ---------- **/
-const searchBox = document.getElementById('searchBox');
-const searchResults = document.getElementById('searchResults');
-const searchCount = document.getElementById('searchCount');
-const searchClear = document.getElementById('searchClear');
-const searchExport = document.getElementById('searchExport');
-
-function searchHits(r, q) {
-  const s = q.toLowerCase();
-  const hit = (txt) => String(txt||'').toLowerCase().includes(s);
+/* ================= Search ================= */
+function searchHits(r, q){
+  var s = q.toLowerCase();
+  var hit = function(txt){ return String(txt||'').toLowerCase().includes(s); };
   if (hit(r.name)) return true;
   if (hit(r.method)) return true;
   if ((r.base||[]).some(hit)) return true;
   if ((r.tags||[]).some(hit)) return true;
-  if ((r.ingredients||[]).some(([a,i]) => hit(a) || hit(i))) return true;
+  if ((r.ingredients||[]).some(function(p){ return hit(p[0]) || hit(p[1]); })) return true;
   return false;
 }
-
-function renderSearchResults(list) {
+function renderSearchResults(list){
+  var searchResults = document.getElementById('searchResults');
+  var searchCount = document.getElementById('searchCount');
   searchResults.innerHTML = '';
-  searchCount.textContent = `${list.length} match${list.length===1?'':'es'}`;
-  if (!list.length) {
+  searchCount.textContent = list.length+' match'+(list.length===1?'':'es');
+  if (!list.length){
     searchResults.innerHTML = '<p class="text-sm text-gray-500">No matches. Try another term.</p>';
     return;
   }
-  list.slice(0, 60).forEach(r => {
-    const ing = (r.ingredients||[]).map(([a,i]) => `<li><b>${a}</b> ${i}</li>`).join('');
-    const card = document.createElement('div');
+  list.slice(0,60).forEach(function(r){
+    var ing = (r.ingredients||[]).map(function(p){ return '<li><b>'+p[0]+'</b> '+p[1]+'</li>'; }).join('');
+    var card = document.createElement('div');
     card.className = 'card p-3';
-    card.innerHTML = `
-      <div class="flex items-center justify-between">
-        <h4 class="font-semibold">${r.name}</h4>
-        <button class="text-violet-600 underline" data-open="${r.id}">Open</button>
-      </div>
-      <div class="text-xs text-gray-600 mt-1">${(r.base||[]).map(b=>titleCase(normBase(String(b).toLowerCase()))).filter((v,i,a)=>a.indexOf(v)===i).join(', ')}</div>
-      ${(r.tags||[]).length ? `<div class="mt-1">${(r.tags||[]).map(tag).join('')}</div>`:''}
-      <details class="mt-2">
-        <summary class="cursor-pointer text-sm">Preview ingredients</summary>
-        <ul class="list-disc pl-6 text-sm mt-1">${ing}</ul>
-      </details>
-    `;
+    card.innerHTML =
+      '<div class="flex items-center justify-between">'+
+      '  <h4 class="font-semibold">'+r.name+'</h4>'+
+      '  <button class="text-violet-600 underline" data-open="'+r.id+'" type="button">Open</button>'+
+      '</div>'+
+      '<div class="text-xs text-gray-600 mt-1">'+
+        (r.base||[]).map(function(b){return titleCase(normBase(String(b).toLowerCase()));}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(', ')+
+      '</div>'+
+      ((r.tags||[]).length? '<div class="mt-1">'+(r.tags||[]).map(tag).join('')+'</div>' : '')+
+      '<details class="mt-2"><summary class="cursor-pointer text-sm">Preview ingredients</summary>'+
+      '  <ul class="list-disc pl-6 text-sm mt-1">'+ing+'</ul>'+
+      '</details>';
     searchResults.appendChild(card);
   });
   wrapOpenHandlers();
 }
-
-function doSearch(q) {
-  const term = (q||'').trim();
-  const params = new URLSearchParams(location.search);
+function doSearch(q){
+  var term = String(q||'').trim();
+  var params = new URLSearchParams(location.search);
   if (term) params.set('q', term); else params.delete('q');
-  history.replaceState(null, '', location.pathname + (params.toString()?`?${params}`:''));
-
-  if (!term) { searchResults.innerHTML=''; searchCount.textContent=''; return; }
-  const pool = (window.ALL_RECIPES||[]).filter(r => searchHits(r, term));
+  history.replaceState(null, '', location.pathname + (params.toString()?('?'+params):''));
+  if (!term){ document.getElementById('searchResults').innerHTML=''; document.getElementById('searchCount').textContent=''; return; }
+  var pool = (window.ALL_RECIPES||[]).filter(function(r){ return searchHits(r, term); });
   renderSearchResults(pool);
 }
-
-function hydrateSearchFromUrl() {
-  const p = new URLSearchParams(location.search);
-  const q = p.get('q') || '';
-  if (q) { searchBox.value = q; doSearch(q); }
+function hydrateSearchFromUrl(){
+  var p = new URLSearchParams(location.search);
+  var q = p.get('q') || '';
+  if (q){ var sb=document.getElementById('searchBox'); if (sb) sb.value=q; doSearch(q); }
+}
+function exportSearchResults(){
+  var term = (document.getElementById('searchBox').value||'').trim();
+  var list = term ? (window.ALL_RECIPES||[]).filter(function(r){return searchHits(r, term);}) : [];
+  var blob = new Blob([JSON.stringify(list, null, 2)], {type:'application/json'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = term ? ('recipes-search-'+term+'.json') : 'recipes.json';
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
-// Wire search events
-searchBox?.addEventListener('input', (e) => doSearch(e.target.value));
-searchClear?.addEventListener('click', () => { searchBox.value=''; doSearch(''); });
-searchExport?.addEventListener('click', () => {
-  const term = searchBox.value.trim();
-  const list = term ? (window.ALL_RECIPES||[]).filter(r=>searchHits(r, term)) : [];
-  const blob = new Blob([JSON.stringify(list, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = term ? `recipes-search-${term}.json` : 'recipes.json';
-  document.body.appendChild(a); a.click(); a.remove();
-});
-
-/** ---------- Criteria matches grid ---------- **/
-const matchesSection = document.getElementById('matchesSection');
-const matchesGrid = document.getElementById('matchesGrid');
-const matchesCount = document.getElementById('matchesCount');
-
+/* ================= Criteria matches grid ================= */
 function renderCriteriaResults(list){
+  var matchesSection = document.getElementById('matchesSection');
+  var matchesGrid = document.getElementById('matchesGrid');
+  var matchesCount = document.getElementById('matchesCount');
   if (!list || !list.length){
-    matchesSection.classList.add('hidden');
-    matchesGrid.innerHTML = '';
-    matchesCount.textContent = '';
-    return;
+    matchesSection.classList.add('hidden'); matchesGrid.innerHTML=''; matchesCount.textContent=''; return;
   }
   matchesSection.classList.remove('hidden');
-  matchesCount.textContent = `${list.length} match${list.length===1?'':'es'}`;
-
-  matchesGrid.innerHTML = '';
-  list.slice(0, 60).forEach(r => {
-    const ingPreview = (r.ingredients||[])
-      .map(([a,i]) => `<li><b>${a}</b> ${i}</li>`)
-      .join('');
-    const card = document.createElement('div');
+  matchesCount.textContent = list.length+' match'+(list.length===1?'':'es');
+  matchesGrid.innerHTML='';
+  list.slice(0,60).forEach(function(r){
+    var ing = (r.ingredients||[]).map(function(p){ return '<li><b>'+p[0]+'</b> '+p[1]+'</li>'; }).join('');
+    var card = document.createElement('div');
     card.className = 'card p-3';
-    card.innerHTML = `
-      <div class="flex items-center justify-between">
-        <h4 class="font-semibold">${r.name}</h4>
-        <button class="text-violet-600 underline" data-open="${r.id}">Open</button>
-      </div>
-      <div class="text-xs text-gray-600 mt-1">
-        ${(r.base||[]).map(b=>titleCase(normBase(String(b).toLowerCase())))
-          .filter((v,i,a)=>a.indexOf(v)===i).join(', ')}
-      </div>
-      ${(r.tags||[]).length ? `<div class="mt-1">${(r.tags||[]).map(tag).join('')}</div>`:''}
-      <details class="mt-2">
-        <summary class="cursor-pointer text-sm">Preview ingredients</summary>
-        <ul class="list-disc pl-6 text-sm mt-1">${ingPreview}</ul>
-      </details>
-    `;
+    card.innerHTML =
+      '<div class="flex items-center justify-between">'+
+      '  <h4 class="font-semibold">'+r.name+'</h4>'+
+      '  <button class="text-violet-600 underline" data-open="'+r.id+'" type="button">Open</button>'+
+      '</div>'+
+      '<div class="text-xs text-gray-600 mt-1">'+
+        (r.base||[]).map(function(b){return titleCase(normBase(String(b).toLowerCase()));}).filter(function(v,i,a){return a.indexOf(v)===i;}).join(', ')+
+      '</div>'+
+      ((r.tags||[]).length? '<div class="mt-1">'+(r.tags||[]).map(tag).join('')+'</div>' : '')+
+      '<details class="mt-2"><summary class="cursor-pointer text-sm">Preview ingredients</summary>'+
+      '  <ul class="list-disc pl-6 text-sm mt-1">'+ing+'</ul>'+
+      '</details>';
     matchesGrid.appendChild(card);
   });
-
   wrapOpenHandlers();
 }
-
 function maybeRefreshMatches(){
+  var matchesSection = document.getElementById('matchesSection');
   if (!matchesSection.classList.contains('hidden')){
-    state.lastPool = window.ALL_RECIPES.filter(matchesCriteria);
+    state.lastPool = (window.ALL_RECIPES||[]).filter(matchesCriteria);
     renderCriteriaResults(state.lastPool);
-    const disable = state.lastPool.length <= 1;
-    document.getElementById('regenBtn').disabled = disable;
-    const mob = document.getElementById('regenBtnMobile'); if (mob) mob.disabled = disable;
+    document.getElementById('regenBtn').disabled = state.lastPool.length <= 1;
   }
 }
 
-/** ---------- Refresh data (re-fetch custom-recipes.json) ---------- **/
-document.getElementById('refreshDataBtn')?.addEventListener('click', refreshData);
-
-async function refreshData() {
-  const status = document.getElementById('refreshStatus');
+/* ================= Maintenance ================= */
+async function refreshData(){
+  var status = document.getElementById('refreshStatus');
   status.textContent = 'Refreshing…';
-
-  try {
-    const custom = await fetchCustom();
-    const seed = Array.isArray(window.RECIPES) ? window.RECIPES : [];
-    const map = new Map();
-    const slug = s => String(s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-    [...seed, ...custom].forEach(r => { const id = r.id || slug(r.name); map.set(id, { ...r, id }); });
-    window.ALL_RECIPES = Array.from(map.values()).sort((a,b)=> (a.name||'').localeCompare(b.name||''));
-
-    // Rebuild bases, keep selections
-    const prev = new Set(state.bases);
-    buildBaseCheckboxes(window.ALL_RECIPES);
-    Array.from(prev).forEach(b => {
-      const idAttr = `base-${b.replace(/\s+/g,'-')}`;
-      const cb = document.getElementById(idAttr);
-      if (cb) { cb.checked = true; state.bases.add(b); }
+  try{
+    var custom = await fetchCustom();
+    var seed = Array.isArray(window.RECIPES) ? window.RECIPES : [];
+    var map = new Map();
+    var slug = function(s){ return String(s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); };
+    seed.concat(custom).forEach(function(r){
+      var id = r.id || slug(r.name); map.set(id, Object.assign({}, r, { id:id }));
     });
+    window.ALL_RECIPES = Array.from(map.values()).sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
 
-    // Refresh featured + grid if visible
+    var prev = new Set(state.bases);
+    buildBaseCheckboxes(window.ALL_RECIPES);
+    syncMobileBases();
+    Array.from(prev).forEach(function(b){
+      var idAttr = 'base-'+b.replace(/\s+/g,'-');
+      var cb = document.getElementById(idAttr);
+      if (cb){ cb.checked = true; state.bases.add(b); }
+    });
     maybeRefreshMatches();
-    if (state.lastPool?.length) {
-      pickAndRender(state.lastPool);
-    }
-
-    // Re-run search if a term is present
-    if (searchBox && typeof doSearch === 'function') doSearch(searchBox.value);
-
-    status.textContent = 'Refreshed ✔';
-    setTimeout(() => status.textContent = '', 1500);
-  } catch (e) {
-    console.error(e);
-    status.textContent = 'Refresh failed — check console.';
+    if (state.lastPool && state.lastPool.length){ pickAndRender(state.lastPool); }
+    var term = (document.getElementById('searchBox').value||'').trim(); if (term) doSearch(term);
+    status.textContent = 'Refreshed ✔'; setTimeout(function(){ status.textContent=''; },1500);
+  }catch(e){
+    console.error(e); status.textContent = 'Refresh failed — check console.';
   }
 }
+function exportMergedCatalog(){
+  var merged = Array.isArray(window.ALL_RECIPES) ? window.ALL_RECIPES : [];
+  var js = '(function(){\n  window.RECIPES = '+JSON.stringify(merged, null, 2)+';\n})();\n';
+  var blob = new Blob([js], {type:'application/javascript'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'catalog.js';
+  document.body.appendChild(a); a.click(); a.remove();
+}
 
-/** ---------- Export merged catalog.js ---------- **/
-document.getElementById('exportCatalogBtn')?.addEventListener('click', () => {
-  const merged = Array.isArray(window.ALL_RECIPES) ? window.ALL_RECIPES : [];
-  const js = `(function(){\n  window.RECIPES = ${JSON.stringify(merged, null, 2)};\n})();\n`;
-  const blob = new Blob([js], {type:'application/javascript'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'catalog.js';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-});
+/* ================= Mobile UX ================= */
+function wireMobileUX(){
+  var drawer = document.getElementById('filtersDrawer');
+  var openBtn = document.getElementById('openFilters');
+  if (openBtn) openBtn.addEventListener('click', function(){ drawer.classList.remove('hidden'); });
+  Array.prototype.forEach.call(drawer.querySelectorAll('[data-close]'), function(el){
+    el.addEventListener('click', function(){ drawer.classList.add('hidden'); });
+  });
 
-/** ---------- Mobile UX wiring ---------- **/
-const drawer = document.getElementById('filtersDrawer');
-const openFiltersBtn = document.getElementById('openFilters');
-const applyFiltersBtn = document.getElementById('applyFilters');
-const clearFiltersBtn = document.getElementById('clearFilters');
+  // Keep selects in sync both ways
+  syncSelects('style','styleMobile');
+  syncSelects('sweetness','sweetnessMobile');
+  syncSelects('effort','effortMobile');
 
-function drawerOpen(){ drawer?.classList.remove('hidden'); }
-function drawerClose(){ drawer?.classList.add('hidden'); }
+  // Apply/Clear
+  onClick('applyFilters', function(){
+    drawer.classList.add('hidden');
+    maybeRefreshMatches();
+  });
+  onClick('clearFilters', function(){
+    resetAll(); syncMobileBases();
+  });
 
-// open/close
-openFiltersBtn?.addEventListener('click', drawerOpen);
-drawer?.querySelectorAll('[data-close]')?.forEach(el => el.addEventListener('click', drawerClose));
+  // Sticky buttons
+  onClick('generateBtnMobile', handleGenerate);
+  onClick('regenBtnMobile', handleRegenerate);
+  onClick('resetBtnMobile', function(){ resetAll(); syncMobileBases(); });
+}
 
-// clone bases from desktop list into mobile list after buildBaseCheckboxes runs
 function syncMobileBases(){
-  const src = document.getElementById('baseSpirits');
-  const dst = document.getElementById('baseSpiritsMobile');
+  var src = document.getElementById('baseSpirits');
+  var dst = document.getElementById('baseSpiritsMobile');
   if (!src || !dst) return;
   dst.innerHTML = '';
-  // clone checkboxes so they look identical; wire state updates
-  src.querySelectorAll('input[type=checkbox]').forEach(cb => {
-    const wrap = document.createElement('div');
-    const id = cb.id + '-m';
-    wrap.innerHTML = `
-      <label class="flex items-center gap-2 border rounded-xl px-3 py-2 hover:bg-gray-50 cursor-pointer">
-        <input type="checkbox" id="${id}" value="${cb.value}" class="accent-violet-600">
-        <span>${cb.parentElement.querySelector('span').textContent}</span>
-      </label>`;
-    const mcb = wrap.querySelector('input');
+  Array.prototype.forEach.call(src.querySelectorAll('input[type=checkbox]'), function(cb){
+    var wrap = document.createElement('div');
+    var id = cb.id + '-m';
+    var labelTxt = cb.parentElement.querySelector('span').textContent;
+    wrap.innerHTML =
+      '<label class="flex items-center gap-2 border rounded-xl px-3 py-2 hover:bg-gray-50 cursor-pointer">'+
+      '  <input type="checkbox" id="'+id+'" value="'+cb.value+'" class="accent-violet-600">'+
+      '  <span>'+labelTxt+'</span>'+
+      '</label>';
+    var mcb = wrap.querySelector('input');
     mcb.checked = cb.checked;
-    mcb.addEventListener('change', (e) => {
-      // mirror to the desktop checkbox to reuse your existing listeners & limits
+    mcb.addEventListener('change', function(e){
       cb.checked = e.target.checked;
-      cb.dispatchEvent(new Event('change', { bubbles: true }));
+      cb.dispatchEvent(new Event('change', { bubbles:true }));
     });
     dst.appendChild(wrap);
   });
 }
 
-// hook into your existing buildBaseCheckboxes
-const _buildBaseCheckboxes = buildBaseCheckboxes;
-buildBaseCheckboxes = function(recipes){
-  _buildBaseCheckboxes(recipes);
-  syncMobileBases();
-};
-
-// keep selects in sync both ways
-function syncSelects(one, other){
-  one.addEventListener('change', () => { other.value = one.value; });
-  other.addEventListener('change', () => { one.value = other.value; });
+function mirrorDesktopSelectsToMobile(){
+  ['style','sweetness','effort'].forEach(function(k){
+    var d = document.getElementById(k);
+    var m = document.getElementById(k+'Mobile');
+    if (d && m) m.value = d.value;
+  });
 }
-syncSelects(document.getElementById('style'), document.getElementById('styleMobile'));
-syncSelects(document.getElementById('sweetness'), document.getElementById('sweetnessMobile'));
-syncSelects(document.getElementById('effort'), document.getElementById('effortMobile'));
+function syncSelects(a,b){
+  var A = document.getElementById(a), B = document.getElementById(b);
+  if (!A || !B) return;
+  A.addEventListener('change', function(){ B.value = A.value; });
+  B.addEventListener('change', function(){ A.value = B.value; });
+}
 
-// Apply/Clear buttons
-applyFiltersBtn?.addEventListener('click', () => {
-  drawerClose();
-  if (typeof maybeRefreshMatches === 'function') maybeRefreshMatches();
-});
-clearFiltersBtn?.addEventListener('click', () => {
-  resetAll();
-  syncMobileBases();
-});
+/* ================= Small helpers ================= */
+function onClick(id, fn){ var el=document.getElementById(id); if (el) el.addEventListener('click', fn); }
+function onChange(id, fn){ var el=document.getElementById(id); if (el) el.addEventListener('change', function(e){ fn(e.target.value); }); }
 
-// Sticky bar buttons map to existing handlers
-document.getElementById('generateBtnMobile')?.addEventListener('click', () => { handleGenerate(); drawerClose(); });
-document.getElementById('regenBtnMobile')?.addEventListener('click', handleRegenerate);
-document.getElementById('resetBtnMobile')?.addEventListener('click', () => { resetAll(); syncMobileBases(); });
-
-// Keep regen enabled/disabled in sticky bar in step with desktop button
-const _toggleRegen = (enabled) => {
-  document.getElementById('regenBtn').disabled = !enabled;
-  const m = document.getElementById('regenBtnMobile');
-  if (m) m.disabled = !enabled;
-};
-// Patch your pickAndRender to update mobile regen state
-const _pickAndRender = pickAndRender;
-pickAndRender = function(pool){
-  _pickAndRender(pool);
-  _toggleRegen((pool||[]).length > 1);
-};
   </script>
 </body>
 </html>
