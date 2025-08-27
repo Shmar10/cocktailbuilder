@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <style>
+      /* iOS notch safe area for the sticky bar */
+      .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0); }
+      .tap-lg input[type="checkbox"] { width: 1.25rem; height: 1.25rem; }
+    </style>
   <title>Cocktail Recipe Generator</title>
   <meta name="description" content="Pick your base spirit(s) + preferences and get a cocktail recipe." />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,10 +27,70 @@
       <nav class="flex items-center gap-2 text-sm">
         <a class="btn" href="admin.html">Admin</a>
         <a class="btn" href="#how">How it works</a>
+        <button id="openFilters" class="btn lg:hidden">Filters</button>
       </nav>
     </div>
   </header>
 
+  <!-- Mobile Filters Drawer -->
+<div id="filtersDrawer" class="fixed inset-0 z-50 hidden">
+  <!-- backdrop -->
+  <div class="absolute inset-0 bg-black/40" data-close></div>
+  <!-- sheet -->
+  <div class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white shadow-2xl p-4 safe-bottom">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-bold">Filters</h2>
+      <button class="btn" data-close>Close</button>
+    </div>
+
+    <div class="grid gap-4 mt-3">
+      <div>
+        <label class="font-semibold">Base spirit (pick 1–2)</label>
+        <div id="baseSpiritsMobile" class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 tap-lg">
+          <!-- JS will clone the same checkboxes here -->
+        </div>
+      </div>
+      <div>
+        <label class="font-semibold" for="styleMobile">Style</label>
+        <select id="styleMobile" class="select mt-2">
+          <option value="any">Any</option>
+          <option value="spirit-forward">Spirit-forward</option>
+          <option value="citrusy">Citrusy / Sour</option>
+          <option value="bubbly">Bubbly</option>
+          <option value="tiki">Tropical / Tiki</option>
+          <option value="bitter">Bitter / Amaro</option>
+          <option value="dessert">Dessert / Creamy</option>
+          <option value="herbal">Herbal</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="font-semibold" for="sweetnessMobile">Sweetness</label>
+          <select id="sweetnessMobile" class="select mt-2">
+            <option value="any">Any</option>
+            <option value="dry">Dry</option>
+            <option value="balanced">Balanced</option>
+            <option value="sweet">Sweet</option>
+          </select>
+        </div>
+        <div>
+          <label class="font-semibold" for="effortMobile">Effort</label>
+          <select id="effortMobile" class="select mt-2">
+            <option value="any">Any</option>
+            <option value="quick">Quick (≤ 4)</option>
+            <option value="standard">Standard (5–6)</option>
+            <option value="fancy">Fancy (7+)</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button id="applyFilters" class="btn btn-primary flex-1">Apply</button>
+        <button id="clearFilters" class="btn">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+  
   <main class="mx-auto max-w-5xl px-4 py-6 grid gap-6 lg:grid-cols-5">
     <!-- Search -->
     <section class="card p-4 lg:col-span-5">
@@ -43,7 +108,7 @@
     </section>
 
     <!-- Controls -->
-    <section class="card p-4 lg:col-span-2">
+    <section class="card p-4 lg:col-span-2 hidden lg:block">
       <h2 class="text-lg font-bold mb-3">Your criteria</h2>
       <div class="grid gap-4">
         <div>
@@ -102,13 +167,15 @@
 
       <!-- How it works -->
       <section id="how" class="card p-4">
-        <h2 class="text-lg font-bold">How it works</h2>
-        <ul class="list-disc pl-6 text-sm text-gray-700 mt-2 space-y-1">
-          <li>Seed recipes live in <code>catalog.js</code>.</li>
-          <li>Admin adds/updates recipes from <code>admin.html</code>. They’re stored in <code>custom-recipes.json</code>.</li>
-          <li>On load, this page merges both and auto-updates the base spirit list (new bases included).</li>
-        </ul>
-      </section>
+  <details class="lg:open">
+    <summary class="cursor-pointer text-lg font-bold">How it works</summary>
+    <ul class="list-disc pl-6 text-sm text-gray-700 mt-2 space-y-1">
+      <li>Seed recipes live in <code>catalog.js</code>.</li>
+      <li>Admin adds/updates recipes from <code>admin.html</code>. They’re stored in <code>custom-recipes.json</code>.</li>
+      <li>On load, this page merges both and auto-updates the base spirit list (new bases included).</li>
+    </ul>
+  </details>
+</section>
 
       <!-- Maintenance -->
       <section class="card p-4">
@@ -129,6 +196,14 @@
       </div>
       <div id="matchesGrid" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
     </section>
+    <!-- Sticky action bar (mobile only) -->
+<div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 border-t backdrop-blur safe-bottom px-4 py-3 lg:hidden">
+  <div class="mx-auto max-w-5xl flex items-center gap-2">
+    <button id="generateBtnMobile" class="btn btn-primary flex-1">Generate</button>
+    <button id="regenBtnMobile" class="btn" disabled>↻</button>
+    <button id="resetBtnMobile" class="btn">Reset</button>
+  </div>
+</div>
   </main>
 
   <footer class="mx-auto max-w-5xl px-4 py-8 text-center text-xs text-gray-500">
@@ -184,6 +259,13 @@ async function boot(){
 
   // Hydrate search from URL (after ALL_RECIPES is set)
   setTimeout(hydrateSearchFromUrl, 0);
+  
+  // mirror initial desktop selections into mobile selects
+['style','sweetness','effort'].forEach(k => {
+  const m = document.getElementById(k + 'Mobile');
+  const d = document.getElementById(k);
+  if (m && d) m.value = d.value;
+});
 }
 
 async function fetchCustom(){
@@ -356,6 +438,7 @@ function resetAll(){
   document.getElementById('style').value='any'; document.getElementById('sweetness').value='any'; document.getElementById('effort').value='any';
   document.getElementById('result').classList.add('hidden'); document.getElementById('noResult').classList.add('hidden');
   document.getElementById('regenBtn').disabled = true;
+  document.getElementById('regenBtnMobile')?.setAttribute('disabled','');
   renderCriteriaResults([]); // hide grid
   syncUrl();
 }
@@ -548,6 +631,94 @@ document.getElementById('exportCatalogBtn')?.addEventListener('click', () => {
   a.click();
   a.remove();
 });
+
+/** ---------- Mobile UX wiring ---------- **/
+const drawer = document.getElementById('filtersDrawer');
+const openFiltersBtn = document.getElementById('openFilters');
+const applyFiltersBtn = document.getElementById('applyFilters');
+const clearFiltersBtn = document.getElementById('clearFilters');
+
+function drawerOpen(){ drawer?.classList.remove('hidden'); }
+function drawerClose(){ drawer?.classList.add('hidden'); }
+
+// open/close
+openFiltersBtn?.addEventListener('click', drawerOpen);
+drawer?.querySelectorAll('[data-close]')?.forEach(el => el.addEventListener('click', drawerClose));
+
+// clone bases from desktop list into mobile list after buildBaseCheckboxes runs
+function syncMobileBases(){
+  const src = document.getElementById('baseSpirits');
+  const dst = document.getElementById('baseSpiritsMobile');
+  if (!src || !dst) return;
+  dst.innerHTML = '';
+  // clone checkboxes so they look identical; wire state updates
+  src.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    const wrap = document.createElement('div');
+    const id = cb.id + '-m';
+    wrap.innerHTML = `
+      <label class="flex items-center gap-2 border rounded-xl px-3 py-2 hover:bg-gray-50 cursor-pointer">
+        <input type="checkbox" id="${id}" value="${cb.value}" class="accent-violet-600">
+        <span>${cb.parentElement.querySelector('span').textContent}</span>
+      </label>`;
+    const mcb = wrap.querySelector('input');
+    mcb.checked = cb.checked;
+    mcb.addEventListener('change', (e) => {
+      // mirror to the desktop checkbox to reuse your existing listeners & limits
+      cb.checked = e.target.checked;
+      cb.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    dst.appendChild(wrap);
+  });
+}
+
+// hook into your existing buildBaseCheckboxes
+const _buildBaseCheckboxes = buildBaseCheckboxes;
+buildBaseCheckboxes = function(recipes){
+  _buildBaseCheckboxes(recipes);
+  syncMobileBases();
+};
+
+// keep selects in sync both ways
+function syncSelects(one, other){
+  one.addEventListener('change', () => { other.value = one.value; });
+  other.addEventListener('change', () => { one.value = other.value; });
+}
+syncSelects(document.getElementById('style'), document.getElementById('styleMobile'));
+syncSelects(document.getElementById('sweetness'), document.getElementById('sweetnessMobile'));
+syncSelects(document.getElementById('effort'), document.getElementById('effortMobile'));
+
+// Apply/Clear buttons
+applyFiltersBtn?.addEventListener('click', () => {
+  // just close the drawer; your listeners already updated state
+  drawerClose();
+  // refresh matches if visible
+  if (typeof maybeRefreshMatches === 'function') maybeRefreshMatches();
+});
+clearFiltersBtn?.addEventListener('click', () => {
+  // reuse your resetAll() and re-sync mobile checkboxes
+  resetAll();
+  syncMobileBases();
+});
+
+// Sticky bar buttons map to existing handlers
+document.getElementById('generateBtnMobile')?.addEventListener('click', handleGenerate);
+document.getElementById('regenBtnMobile')?.addEventListener('click', handleRegenerate);
+document.getElementById('resetBtnMobile')?.addEventListener('click', () => { resetAll(); syncMobileBases(); });
+
+// Keep regen enabled/disabled in sticky bar in step with desktop button
+const _toggleRegen = (enabled) => {
+  document.getElementById('regenBtn').disabled = !enabled;
+  const m = document.getElementById('regenBtnMobile');
+  if (m) m.disabled = !enabled;
+};
+// Patch your pickAndRender to update mobile regen state
+const _pickAndRender = pickAndRender;
+pickAndRender = function(pool){
+  _pickAndRender(pool);
+  _toggleRegen((pool||[]).length > 1);
+};
+
+    
   </script>
 </body>
 </html>
